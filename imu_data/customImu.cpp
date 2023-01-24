@@ -9,19 +9,6 @@ void customImu::output(float gyro_x, float gyro_y, float gyro_z, float accel_x, 
     if (this-> counter == this-> number_of_measures){
 
       this-> counter = 0;
-
-      Serial.print("Gyro: x = ");
-      Serial.print(gyro_x);
-      Serial.print(" y = ");
-      Serial.print(gyro_y);
-      Serial.print(" z = ");
-      Serial.print(gyro_z);
-      Serial.print(" Accel: x = ");
-      Serial.print(accel_x);
-      Serial.print(" y = ");
-      Serial.print(accel_y);
-      Serial.print(" z = ");
-      Serial.println(accel_z);
       
       Serial.print("Gyro: x = ");
       Serial.print(this-> U_hat_gyro_x);
@@ -35,8 +22,6 @@ void customImu::output(float gyro_x, float gyro_y, float gyro_z, float accel_x, 
       Serial.print(this-> U_hat_accel_y);
       Serial.print(" z = ");
       Serial.println(this-> U_hat_accel_z);
-
-      Serial.println("----------------------------------------------------------------------------------");     
     }
 }
 
