@@ -11,17 +11,17 @@ void customImu::output(float gyro_x, float gyro_y, float gyro_z, float accel_x, 
       this-> counter = 0;
       
       Serial.print("Gyro: x = ");
-      Serial.print(this-> U_hat_gyro_x);
+      Serial.print((int) this-> U_hat_gyro_x * 1000.);
       Serial.print(" y = ");
-      Serial.print(this-> U_hat_gyro_y);
+      Serial.print((int) this-> U_hat_gyro_y * 1000.);
       Serial.print(" z = ");
-      Serial.print(this-> U_hat_gyro_z);
+      Serial.print((int) this-> U_hat_gyro_z * 1000.);
       Serial.print(" Accel: x = ");
-      Serial.print(this-> U_hat_accel_x);
+      Serial.print((int) this-> U_hat_accel_x * 1000.);
       Serial.print(" y = ");
-      Serial.print(this-> U_hat_accel_y);
+      Serial.print((int) this-> U_hat_accel_y * 1000.);
       Serial.print(" z = ");
-      Serial.println(this-> U_hat_accel_z);
+      Serial.println((int) this-> U_hat_accel_z * 1000.);
     }
 }
 
