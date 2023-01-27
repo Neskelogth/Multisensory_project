@@ -1,9 +1,6 @@
 #include "customImu.h"
 #include <Adafruit_BNO055.h>
 
-customImu::customImu(int n):number_of_measures(n){}
-
-
 void customImu::output(float gyro_x, float gyro_y, float gyro_z, float accel_x, float accel_y, float accel_z){
 
     if (this-> counter == this-> number_of_measures){
@@ -11,17 +8,19 @@ void customImu::output(float gyro_x, float gyro_y, float gyro_z, float accel_x, 
       this-> counter = 0;
       
       Serial.print("Gyro: x = ");
-      Serial.print((int) this-> U_hat_gyro_x * 1000.);
+      Serial.print(this-> U_hat_gyro_x);
       Serial.print(" y = ");
-      Serial.print((int) this-> U_hat_gyro_y * 1000.);
+      Serial.print(this-> U_hat_gyro_y);
       Serial.print(" z = ");
-      Serial.print((int) this-> U_hat_gyro_z * 1000.);
+      Serial.print(this-> U_hat_gyro_z);
       Serial.print(" Accel: x = ");
-      Serial.print((int) this-> U_hat_accel_x * 1000.);
+      Serial.print(this-> U_hat_accel_x);
       Serial.print(" y = ");
-      Serial.print((int) this-> U_hat_accel_y * 1000.);
+      Serial.print(this-> U_hat_accel_y);
       Serial.print(" z = ");
-      Serial.println((int) this-> U_hat_accel_z * 1000.);
+      Serial.print(this-> U_hat_accel_z);
+      Serial.print(" measures= ");
+      Serial.println(this-> number_of_measures);
     }
 }
 
@@ -32,13 +31,13 @@ void customImu::update(){
     sensors_event_t event;
     this-> getEvent(& event);
 
-    float roll = (float) event.orientation.roll;          // x
-    float pitch = (float) event.orientation.pitch;        // y
-    float heading = (float) event.orientation.heading;    // z
+    int roll = (int) event.orientation.roll * 1000;          // x
+    int pitch = (int) event.orientation.pitch * 1000;        // y
+    int heading = (int) event.orientation.heading * 1000;    // z
 
-    float accel_x = (float) event.acceleration.x;
-    float accel_y = (float) event.acceleration.y;
-    float accel_z = (float) event.acceleration.z;
+    int accel_x = (int) event.acceleration.x * 1000;
+    int accel_y = (int) event.acceleration.y * 1000;
+    int accel_z = (int) event.acceleration.z * 1000;
 
     // Saving the data
     this-> measures_gyro_x[this-> counter] = roll;
@@ -56,13 +55,13 @@ void customImu::update(){
     if(this-> counter == num){
 
       // Average the measurements
-      float avg_gyro_x = 0;
-      float avg_gyro_y = 0;
-      float avg_gyro_z = 0;
+      int avg_gyro_x = 0;
+      int avg_gyro_y = 0;
+      int avg_gyro_z = 0;
 
-      float avg_accel_x = 0;
-      float avg_accel_y = 0;
-      float avg_accel_z = 0;
+      int avg_accel_x = 0;
+      int avg_accel_y = 0;
+      int avg_accel_z = 0;
       
       for(int i = 0; i < num; i++){
         
@@ -74,7 +73,7 @@ void customImu::update(){
         avg_accel_y += this-> measures_accel_y[i];
         avg_accel_z += this-> measures_accel_z[i];
       }
-
+      /*
       avg_gyro_x /= num;
       avg_gyro_y /= num;
       avg_gyro_z /= num;
@@ -82,7 +81,7 @@ void customImu::update(){
       avg_accel_x /= num;
       avg_accel_y /= num;
       avg_accel_z /= num;
-
+      */
       // gyro filtering
       this-> K_gyro_x = (this-> P_gyro_x * this-> H_gyro_x) / (this-> H_gyro_x * this-> P_gyro_x * this-> H_gyro_x + this-> R_gyro_x); //updating Kalman gain
       this-> U_hat_gyro_x = this-> K_gyro_x * (avg_gyro_x - this-> H_gyro_x * this-> U_hat_gyro_x); //is U the prev_measure? should make sense

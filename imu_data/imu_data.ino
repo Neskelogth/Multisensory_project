@@ -1,8 +1,7 @@
 #include "customImu.h"
 
 const long BAUD_RATE = 115200;
-const int n = 10;
-customImu f(n);
+customImu f = customImu();
 
 void setup() {
   
