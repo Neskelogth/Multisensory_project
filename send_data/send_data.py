@@ -30,8 +30,6 @@ if __name__ == '__main__':
             accel_y = int(float(line[16]) * 1000)
             accel_z = int(float(line[19]) * 1000)
 
-            print(gyro_x, gyro_y, gyro_z, accel_x, accel_y, accel_z)
-
             message = pack('6i', gyro_x, gyro_y, gyro_z, accel_x, accel_y, accel_z)
             sock.sendto(message, server_address)
 
