@@ -1,7 +1,6 @@
 import socket
 from struct import unpack
 import matplotlib.pyplot as plt
-import time
 import numpy as np
 import keyboard
 
@@ -13,10 +12,6 @@ server_address = (host, port)
 
 print(f'Starting UDP server on {host} port {port}')
 sock.bind(server_address)
-
-# generating random data values
-x = np.array(list())
-y = np.array(list())
 
 # enable interactive mode
 plt.ion()
@@ -32,13 +27,9 @@ line2, = axs[1].plot(z, y, linewidth=1, marker='o', color='g')
 # setting labels
 axs[0].set_xlabel("X-axis")
 axs[0].set_ylabel("Y-axis")
-# axs[0].set_ylim(-95, 95)
-# axs[0].set_xlim(-185, 185)
 
 axs[1].set_xlabel("Z-axis")
 axs[1].set_ylabel("Y-axis")
-# axs[1].set_ylim(-95, 95)
-# axs[1].set_xlim(-5, 365)
 
 min_y, max_y = 0, 0
 min_x, max_x = 0, 0
@@ -48,10 +39,8 @@ min_z, max_z = 0, 0
 while True:
 
     message, address = sock.recvfrom(4096)  # maybe 4096 is to change
-    # print(f'Received {len(message)} bytes')
     gyro_x, gyro_y, gyro_z, _, _, _ = unpack('6i', message)
 
-    # obtained the mean and
     gyro_x /= 1000
     gyro_y /= 1000
     gyro_z /= 1000
@@ -65,9 +54,6 @@ while True:
     elif y[-1] < min_y:
         min_y = y[-1]
 
-    axs[0].set_ylim(min_y - 1, max_y + 1)
-    axs[1].set_ylim(min_y - 1, max_y + 1)
-
     if x[-1] > max_x:
         max_x = x[-1]
     elif x[-1] < min_x:
@@ -77,6 +63,10 @@ while True:
         max_z = z[-1]
     elif z[-1] < min_z:
         min_z = z[-1]
+
+    
+    axs[0].set_ylim(min_y - 1, max_y + 1)
+    axs[1].set_ylim(min_y - 1, max_y + 1)
 
     axs[0].set_xlim(min_x - 1, max_x + 1)
     axs[1].set_xlim(min_z - 1, max_z + 1)
