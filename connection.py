@@ -12,7 +12,15 @@ if __name__ == "__main__":
       help="The port the OSC server is listening on")
   args = parser.parse_args()
 
-  client = udp_client.SimpleUDPClient(args.ip, args.port)
+  parser2 = argparse.ArgumentParser()
+  parser2.add_argument("--ip", default="127.0.0.1",
+      help="The ip of the OSC server")
+  parser2.add_argument("--port", type=int, default=5006,
+      help="The port the OSC server is listening on")
+  args2 = parser2.parse_args()
+
+  client = udp_client.SimpleUDPClient(args.ip, args.port) # Pure Data
+  client2 = udp_client.SimpleUDPClient(args2.ip, args2.port) # Processing
 
   client.send_message("/on", 1)
 
@@ -38,6 +46,8 @@ if __name__ == "__main__":
     fig.canvas.draw_idle()
     client.send_message("/x", x)
     client.send_message("/y", -y)
+    client2.send_message("/x", x)
+    client2.send_message("/y", -y)
 
 
   fig.canvas.mpl_connect('motion_notify_event', on_move)
