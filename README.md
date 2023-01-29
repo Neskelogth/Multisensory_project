@@ -39,3 +39,9 @@ When the python code is running, a representation of the board will show up. Mov
 ## Customize
 
 In order to customize the code for a real board, you just need to reassign the value of the variables x and y in the python code, with the input coming from the device
+
+## Processing
+
+I've also created a simple 'Processing' sketch, in order to visualize the centering. It could be integrated, with some midifications, in the graphical interface of the project.
+
+In order to test it, you just need to open it and run the sketch. The code is connected with the python one and acts simoultaneously with Pure Data.
