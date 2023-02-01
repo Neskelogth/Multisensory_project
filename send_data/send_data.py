@@ -11,9 +11,8 @@ if __name__ == '__main__':
     server_address = (host, port)
 
     name = '/dev/ttyACM0'
-    counter = 0
 
-    ser = serial.Serial(name, 115200, timeout=1)
+    ser = serial.Serial(name, 9600, timeout=1)
     ser.reset_input_buffer()
 
     while True:
@@ -32,5 +31,3 @@ if __name__ == '__main__':
 
             message = pack('6i', gyro_x, gyro_y, gyro_z, accel_x, accel_y, accel_z)
             sock.sendto(message, server_address)
-
-            counter += 1
