@@ -10,7 +10,7 @@
 /* IMU ***************************************************************************************************/
 
 /* Set the delay between fresh samples */
-static const unsigned long BNO055_PERIOD_MILLISECS = 100; // E.g. 4 milliseconds per sample for 250 Hz
+static const unsigned long BNO055_PERIOD_MILLISECS = 1; // E.g. 4 milliseconds per sample for 250 Hz
 #define BNO055_PERIOD_MICROSECS 100.0e3f //= 1000 * PERIOD_MILLISECS;
 static uint32_t BNO055_last_read = 0;
 
@@ -36,6 +36,15 @@ then we are using the 0x70 address.*/
 #define ARRAYSIZE 4
 String names[ARRAYSIZE] = { "bno_elbowL", "bno_shoulderL", "bno_shoulderR", "bno_elbowR" };
 
+//init counter
+int a,b,c,d = 0;
+  
+//init avg
+float avg_a = 0;
+float avg_b = 0;
+float avg_c = 0;
+float avg_d = 0;
+
 
 /**************************************************************************/
 /* Choose bus */
@@ -46,12 +55,12 @@ void tcaselect(uint8_t bus){
   
   if (bus > 7) return;
 
-  Serial.print("TCA Port #"); Serial.println(bus);
+  //Serial.print("TCA Port #"); Serial.println(bus);
 
   Wire.beginTransmission(TCAADDR);
   Wire.write(1 << bus); //send byte to select bus
   Wire.endTransmission();
-  Serial.println(bus);
+  //Serial.println(bus);
 }
 
 
@@ -62,14 +71,14 @@ void init_sensor(uint8_t i, Adafruit_BNO055 bno){
   /*multiplex selection*/
   tcaselect(i);
 
-  Serial.println("Sensor initializing..."); Serial.println("");
+  //Serial.println("Sensor initializing..."); Serial.println("");
   
   /* Initialize the sensor */
   if(!bno.begin()){
     /* There was a problem detecting the BNO055 ... check your connections */
-    Serial.print(F("BNO055 "));
+    /*Serial.print(F("BNO055 "));
     Serial.print(names[i]); 
-    Serial.println(F(" NOT detected"));
+    Serial.println(F(" NOT detected"));*/
     while(1);
   }
   
@@ -82,9 +91,9 @@ void setup() {
   while(!Serial);
   Wire.begin();
 
-  Serial.println(F("##############################"));            
+  /*Serial.println(F("##############################"));            
   Serial.println(F("Starting Initialization"));
-  Serial.println(F("##############################"));
+  Serial.println(F("##############################"));*/
 
   /* Setup of the digital sensors */
   /*create a function to call for each sensor*/
@@ -97,12 +106,12 @@ void setup() {
   init_sensor(3, bno_elbowR);
   delay(10);
     
-  Serial.println();
+  /*Serial.println();
   Serial.println(F("##############################"));
   Serial.println(F("Initialization Finished"));
   Serial.println(F("##############################"));  
   Serial.println();
-  Serial.println();
+  Serial.println();*/
   
   //filtering sensor by taking an averaging every 10 measures
   
@@ -113,7 +122,7 @@ void setup() {
   avg_a = 0;
   avg_b = 0;
   avg_c = 0;
-  avd_d = 0;
+  avg_d = 0;
 
 }
 
@@ -132,40 +141,39 @@ void loop() {
 
     switch (bus) {
     case 0:
-      
       a += 1;
       avg_a += orientationData.orientation.y;
       
       if (a % 10 == 0){
-      bno_wrist.getEvent(&orientationData, Adafruit_BNO055::VECTOR_EULER);
-      Serial.print("elbowL y = ");
-      Serial.print(avg_a/10 * 1000);
+      bno_elbowL.getEvent(&orientationData, Adafruit_BNO055::VECTOR_EULER);
+      Serial.print(" elbowL y = ");
+      Serial.println(avg_a/10 * 1000);
       avg_a = 0;
       }
       
       break;
     case 1:
-      
+
       b += 1;
       avg_b += orientationData.orientation.y;
       
       if (b % 10 == 0){
-      bno_shoulderL.getEvent(&angVelData, Adafruit_BNO055::VECTOR_GYROSCOPE);
-      Serial.print("shoulderL y = ");
-      Serial.print(avg_b/10 * 1000);
+      bno_shoulderL.getEvent(&orientationData, Adafruit_BNO055::VECTOR_GYROSCOPE);
+      Serial.print(" shoulderL y = ");
+      Serial.println(avg_b/10 * 1000);
       avg_b = 0;
       }
       
       break;
     case 2:
-    
+      
       c += 1;
       avg_c += orientationData.orientation.y;
     
       if (c % 10 == 0){
-      bno_shoulderR.getEvent(&angVelData, Adafruit_BNO055::VECTOR_GYROSCOPE);
-      Serial.print("shoulderR y = ");
-      Serial.print(avg_c/10 * 1000 );
+      bno_shoulderR.getEvent(&orientationData, Adafruit_BNO055::VECTOR_GYROSCOPE);
+      Serial.print(" shoulderR y = ");
+      Serial.println(avg_c/10 * 1000);
       avg_c = 0;
       }
       
@@ -176,8 +184,8 @@ void loop() {
       avg_d += orientationData.orientation.y;
       
       if (d % 10 == 0){
-      bno_elbowR.getEvent(&angVelData, Adafruit_BNO055::VECTOR_GYROSCOPE);
-      Serial.print("elbowR y = ");
+      bno_elbowR.getEvent(&orientationData, Adafruit_BNO055::VECTOR_GYROSCOPE);
+      Serial.print(" elbowR y = ");
       Serial.println(avg_d/10 * 1000);
       avg_d = 0;
       }

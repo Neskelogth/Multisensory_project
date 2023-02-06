@@ -84,9 +84,9 @@ def forward_kinematics(T_we, T_es, T_bs, T_se, T_ew):
     
     #calculate forward kinematics of end effectors by multiply matrices
     #left wrist
-    T_ws_l = T_we @ T_es
+    T_ws_l = np.matmul(T_we, T_es)
     #right wrist
-    T_ws_r = T_bs @ T_se @ T_ew
+    T_ws_r = np.matmul(np.matmul(T_bs, T_se), T_ew)
     
     return T_ws_l, T_ws_r
 
@@ -115,7 +115,7 @@ def extract_point(T_we, T_es, T_se, T_ew, T_ws_l , T_ws_r, T_bs):
     p_s_l_y = 0
     
     #point elbow
-    T_e = T_bs @ T_se
+    T_e = np.matmul(T_bs, T_se)
     p_e_r_x = T_e[0][3]
     p_e_r_y = T_e[1][3]
     
@@ -199,11 +199,14 @@ if __name__ == "__main__":
     
     ############################  setup  ##################################
     lwe, les, lse, lew , T_bs = start()
+    print('Ciao')
     
     #set socket for pc connection
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
-    host, port = '192.168.0.12', 65001
+    print('Check')
+
+    host, port = '192.168.0.12', 30080
     server_address = (host, port)
     
     #arduino serial id
@@ -213,6 +216,7 @@ if __name__ == "__main__":
     ser = serial.Serial(name, 9600, timeout=1)
     ser.reset_input_buffer()
     
+    print('Serial')
     
     ############################  loop  ##################################
     while True:
@@ -220,9 +224,9 @@ if __name__ == "__main__":
             
             #received from arduino
             line = ser.readline().rstrip()
+            print(line)
             #splitta gli spazi 
             line = line.split()
-            
             angle_we = int(float(line[3]))
             angle_es = int(float(line[6])) 
             angle_se = int(float(line[9]))
