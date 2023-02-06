@@ -103,11 +103,23 @@ void setup() {
   Serial.println(F("##############################"));  
   Serial.println();
   Serial.println();
+  
+  //filtering sensor by taking an averaging every 10 measures
+  
+  //init counter
+  a,b,c,d = 0;
+  
+  //init avg
+  avg_a = 0;
+  avg_b = 0;
+  avg_c = 0;
+  avd_d = 0;
 
 }
 
 void loop() {
   /*for each imu print in sequence datas*/
+  
 
   for (int bus = 0; bus < 4; bus++) {
 
@@ -116,42 +128,59 @@ void loop() {
     if (micros() - BNO055_last_read >= BNO055_PERIOD_MICROSECS) {
     BNO055_last_read += BNO055_PERIOD_MICROSECS;
 
-    //sensors_event_t orientationData, angVelData, linearAccelData;
-    sensors_event_t angVelData;
+    sensors_event_t orientationData;
 
     switch (bus) {
     case 0:
-      //bno_wrist.getEvent(&orientationData, Adafruit_BNO055::VECTOR_EULER);
-      bno_elbowL.getEvent(&angVelData, Adafruit_BNO055::VECTOR_GYROSCOPE);
-      //bno_wrist.getEvent(&linearAccelData, Adafruit_BNO055::VECTOR_LINEARACCEL);
-
-      Serial.print("y_elbowL = ");
-      Serial.print(angVelData.orientation.y);
-      delay(1000);
+      
+      a += 1;
+      avg_a += orientationData.orientation.y;
+      
+      if (a % 10 == 0){
+      bno_wrist.getEvent(&orientationData, Adafruit_BNO055::VECTOR_EULER);
+      Serial.print("elbowL y = ");
+      Serial.print(avg_a/10 * 1000);
+      avg_a = 0;
+      }
       
       break;
     case 1:
+      
+      b += 1;
+      avg_b += orientationData.orientation.y;
+      
+      if (b % 10 == 0){
       bno_shoulderL.getEvent(&angVelData, Adafruit_BNO055::VECTOR_GYROSCOPE);
-
-      Serial.print("y_shoulderL = ");
-      Serial.print(angVelData.orientation.y);
-      delay(1000);
+      Serial.print("shoulderL y = ");
+      Serial.print(avg_b/10 * 1000);
+      avg_b = 0;
+      }
       
       break;
     case 2:
+    
+      c += 1;
+      avg_c += orientationData.orientation.y;
+    
+      if (c % 10 == 0){
       bno_shoulderR.getEvent(&angVelData, Adafruit_BNO055::VECTOR_GYROSCOPE);
-
-      Serial.print("y_shoulderR = ");
-      Serial.print(angVelData.orientation.y);
-      delay(1000);
+      Serial.print("shoulderR y = ");
+      Serial.print(avg_c/10 * 1000 );
+      avg_c = 0;
+      }
       
       break;
     case 3:
+      
+      d += 1;
+      avg_d += orientationData.orientation.y;
+      
+      if (d % 10 == 0){
       bno_elbowR.getEvent(&angVelData, Adafruit_BNO055::VECTOR_GYROSCOPE);
-
-      Serial.print("y_elbowR = ");
-      Serial.println(angVelData.orientation.y);
-      delay(1000);
+      Serial.print("elbowR y = ");
+      Serial.println(avg_d/10 * 1000);
+      avg_d = 0;
+      }
       
       break;
     }
