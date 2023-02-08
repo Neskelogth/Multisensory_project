@@ -3,6 +3,13 @@ from struct import unpack
 import matplotlib.pyplot as plt
 import numpy as np
 import keyboard
+import random # ONLY FOR TESTING
+import time # ONLY FOR TESTING
+
+def circle_update(x: int, y: int):
+    if (abs(x)+abs(y)) < 0.55:
+        return 'g', (0,0)
+    return 'r', (x,y)
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
@@ -15,14 +22,23 @@ sock.bind(server_address)
 
 # enable interactive mode
 plt.ion()
-fig, axs = plt.subplots(1, 2, sharey=True, figsize=(15, 6))
+fig, axs = plt.subplots(1, 3, sharey=True, figsize=(15, 6))
 
 x = np.array(list())
 y = np.array(list())
 z = np.array(list())
 
+xbalance = [2, 6, 7]
+ybalance = [3, 5, 7]
+
 line1, = axs[0].plot(x, y, linewidth=1, marker='o', color='b')
 line2, = axs[1].plot(z, y, linewidth=1, marker='o', color='g')
+
+# Representation of the balanceboard
+circle_center = plt.Circle((0, 0), 0.2, color='blue', fill=True)
+axs[2].add_artist(circle_center)
+moving_circle = plt.Circle((0, 0), 0.2, color='red', fill=True)
+axs[2].add_artist(moving_circle)
 
 # setting labels
 axs[0].set_xlabel("X-axis")
@@ -31,6 +47,12 @@ axs[0].set_ylabel("Y-axis")
 axs[1].set_xlabel("Z-axis")
 axs[1].set_ylabel("Y-axis")
 
+axs[2].set_xlabel("X-axis")
+axs[2].set_ylabel("Y-axis")
+axs[2].grid(linestyle = '--')
+axs[2].set_xticks(np.arange(-1,1,0.25))
+axs[2].set_yticks(np.arange(-1,1,0.25))
+
 min_y, max_y = 0, 0
 min_x, max_x = 0, 0
 min_z, max_z = 0, 0
@@ -38,8 +60,12 @@ min_z, max_z = 0, 0
 # looping
 while True:
 
-    message, address = sock.recvfrom(4096)  # maybe 4096 is to change
-    gyro_x, gyro_y, gyro_z, _, _, _ = unpack('6i', message)
+    #message, address = sock.recvfrom(4096)  # maybe 4096 is to change  #TO UNCOMMENT
+    #gyro_x, gyro_y, gyro_z, _, _, _ = unpack('6i', message)    #TO UNCOMMENT
+
+    gyro_x = random.uniform(-1000,1000) #ONLY FOR TESTING
+    gyro_y = random.uniform(-1000,1000) #ONLY FOR TESTING
+    gyro_z = random.uniform(-1000,1000) #ONLY FOR TESTING
 
     gyro_x /= 1000
     gyro_y /= 1000
@@ -64,12 +90,24 @@ while True:
     elif z[-1] < min_z:
         min_z = z[-1]
 
+    xbalance = random.uniform(-1,1) # TEST
+    ybalance = random.uniform(-1,1) # TEST
+
+    # update of the circle that displays the balance
+    color, center = circle_update(xbalance,ybalance)
+    moving_circle.center = center
+    moving_circle.set_color(color)
     
     axs[0].set_ylim(min_y - 1, max_y + 1)
     axs[1].set_ylim(min_y - 1, max_y + 1)
 
     axs[0].set_xlim(min_x - 1, max_x + 1)
     axs[1].set_xlim(min_z - 1, max_z + 1)
+
+    axs[2].set_ylim(-1,1)
+    axs[2].set_xlim(-1,1)
+    axs[2].set_aspect(1)
+
 
     line1.set_xdata(x)
     line1.set_ydata(y)
@@ -82,6 +120,8 @@ while True:
 
     # to flush the GUI events
     fig.canvas.flush_events()
+
+    time.sleep(0.5) # TEST
 
     if keyboard.is_pressed('q'):
         break
