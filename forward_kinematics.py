@@ -170,7 +170,7 @@ def start():
     print(es) 
     se = es
     
-    bs = float(input("Enter a value shoulders length: ")) 
+    bs = float(input("Enter a value for shoulders length: ")) 
     print(bs)
     
     print("-------forward kinematics-------")
@@ -219,28 +219,65 @@ if __name__ == "__main__":
     print('Serial')
     
     ############################  loop  ##################################
+
     while True:
         if ser.in_waiting > 0:
+
+            avg_angle_we = 0
+            avg_angle_es = 0
+            avg_angle_se = 0
+            avg_angle_ew = 0
+            avg_gyro_x = 0
+            avg_gyro_y = 0
+            avg_gyro_z = 0
+            counter = 0
             
-            #received from arduino
-            line = ser.readline().rstrip()
-            print(line)
-            #splitta gli spazi 
-            line = line.split()
-            angle_we = int(float(line[3]))
-            angle_es = int(float(line[6])) 
-            angle_se = int(float(line[9]))
-            angle_ew = int(float(line[12]))
+            while(counter < 9):
+                #received from arduino
+                line = ser.readline().rstrip()
+                counter += 1
+                print(line)
+                #splitta gli spazi 
+                line = line.split()
+                #control from which imus is sent
+                if (str(line[0]) == 'elbowL'): angle_we = int(float(line[3]))
+                if(str(line[0]) == 'shoulderL'): angle_es = int(float(line[3]))
+                if(str(line[0]) == 'shoulderR'): angle_se = int(float(line[3]))
+                if(str(line[0]) == 'elbowR'): angle_ew = int(float(line[3]))
+                if(str(line[0]) == 'Bow'): 
+                    gyro_x = int(float(line[3]))
+                    gyro_y = int(float(line[6]))
+                    gyro_z = int(float(line[9]))
+
+                #filtering data
+                avg_angle_we += angle_we
+                avg_angle_es += angle_es
+                avg_angle_se += angle_se
+                avg_angle_ew += angle_ew
+                avg_gyro_x += gyro_x
+                avg_gyro_y += gyro_y
+                avg_gyro_z += gyro_z
             
+            #average
+            avg_angle_we /= 10
+            avg_angle_es /= 10
+            avg_angle_se /= 10
+            avg_angle_ew /= 10
+            avg_gyro_x /= 10
+            avg_gyro_y /= 10
+            avg_gyro_z /= 10
+ 
             angle_bs = 0
             
-            T_we, T_es, T_se, T_ew, T_ws_l , T_ws_r = evaluate(angle_we, angle_es, angle_bs, angle_se, angle_ew, lwe, les, lse, lew, T_bs)
+            T_we, T_es, T_se, T_ew, T_ws_l , T_ws_r = evaluate(avg_angle_we, avg_angle_es, angle_bs, avg_angle_se, avg_angle_ew, lwe, les, lse, lew, T_bs)
             
             #transform matrix into point poistion
             p_s_r_x, p_s_r_y, p_s_l_x, p_s_l_y, p_e_r_x, p_e_r_y, p_e_l_x, \
                 p_e_l_y, p_w_r_x, p_w_r_y, p_w_l_x, p_w_l_y = extract_point(T_we, T_es, T_se, T_ew, T_ws_l , T_ws_r, T_bs)  
             
             #send to pc from raspberry
-            message = pack('12i', p_s_r_x, p_s_r_y, p_s_l_x, p_s_l_y, p_e_r_x, p_e_r_y, p_e_l_x, p_e_l_y, p_w_r_x, p_w_r_y, p_w_l_x, p_w_l_y)
+            message = pack('15i', p_s_r_x, p_s_r_y, p_s_l_x, p_s_l_y, p_e_r_x, p_e_r_y, p_e_l_x, p_e_l_y, p_w_r_x, p_w_r_y,\
+                 p_w_l_x, p_w_l_y, avg_gyro_x, avg_gyro_y, avg_gyro_z)
             sock.sendto(message, server_address)
+    
     
