@@ -3,13 +3,27 @@ from struct import unpack
 import matplotlib.pyplot as plt
 import numpy as np
 import keyboard
+import argparse
+from pythonosc import udp_client
 import random # ONLY FOR TESTING
 import time # ONLY FOR TESTING
 
+plt.rcParams['keymap.quit'] = '' # To avoid matplotlib closing the program with 'q'
+
 def circle_update(x: int, y: int):
-    if (abs(x)+abs(y)) < 0.55:
+    if (abs(x)+abs(y)) < 0.15:
         return 'g', (0,0)
     return 'r', (x,y)
+
+# Communication with Pure Data
+parser = argparse.ArgumentParser()
+parser.add_argument("--ip", default="127.0.0.1",
+    help="The ip of the OSC server")
+parser.add_argument("--port", type=int, default=5005,
+    help="The port the OSC server is listening on")
+args = parser.parse_args()
+client = udp_client.SimpleUDPClient(args.ip, args.port)
+client.send_message("/on", 1)
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
@@ -58,7 +72,7 @@ min_x, max_x = 0, 0
 min_z, max_z = 0, 0
 
 # looping
-while True:
+while not keyboard.is_pressed('q'):
 
     #message, address = sock.recvfrom(4096)  # maybe 4096 is to change  #TO UNCOMMENT
     #gyro_x, gyro_y, gyro_z, _, _, _ = unpack('6i', message)    #TO UNCOMMENT
@@ -97,6 +111,10 @@ while True:
     color, center = circle_update(xbalance,ybalance)
     moving_circle.center = center
     moving_circle.set_color(color)
+
+    # Send coordinates to Pure Data
+    client.send_message("/x", xbalance)
+    client.send_message("/y", -ybalance)
     
     axs[0].set_ylim(min_y - 1, max_y + 1)
     axs[1].set_ylim(min_y - 1, max_y + 1)
@@ -107,7 +125,6 @@ while True:
     axs[2].set_ylim(-1,1)
     axs[2].set_xlim(-1,1)
     axs[2].set_aspect(1)
-
 
     line1.set_xdata(x)
     line1.set_ydata(y)
@@ -121,7 +138,10 @@ while True:
     # to flush the GUI events
     fig.canvas.flush_events()
 
-    time.sleep(0.5) # TEST
+    time.sleep(0.2) # TEST
 
+    plt.show(block = False)
     if keyboard.is_pressed('q'):
+        # End of Pure Data communication
+        client.send_message("/on", 0)
         break
