@@ -300,7 +300,7 @@ if __name__ == "__main__":
             angle_bs = 0
             
             
-            # Applying Kalman filter 
+            # Applying Kalman filter    
             K_gyro_x = (P_gyro_x * H_gyro_x) / (H_gyro_x * P_gyro_x * H_gyro_x + R_gyro_x)
             U_hat_gyro_x =  K_gyro_x * (avg_gyro_x -  H_gyro_x *  U_hat_gyro_x)
             P_gyro_x = (1 - K_gyro_x * H_gyro_x) * P_gyro_x + Q_gyro_x
@@ -337,7 +337,11 @@ if __name__ == "__main__":
             #send to pc from raspberry
             #gyro is already *1000 from arduino
             message = pack('15i', p_s_r_x, p_s_r_y, p_s_l_x, p_s_l_y, p_e_r_x, p_e_r_y, p_e_l_x, p_e_l_y, p_w_r_x, p_w_r_y,\
+<<<<<<< HEAD
+                 p_w_l_x, p_w_l_y, U_hat_gyro_x, U_hat_gyro_y, U_hat_gyro_z)
+=======
                  p_w_l_x, p_w_l_y, int(avg_gyro_x), int(avg_gyro_y), int(avg_gyro_z))
+>>>>>>> c1377027c59231078634d125245b2f3bd9a520d2
             sock.sendto(message, server_address)
     
     
