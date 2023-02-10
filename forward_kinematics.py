@@ -219,6 +219,30 @@ if __name__ == "__main__":
     print('Serial')
     
     ############################  loop  ##################################
+    
+    K_gyro_x = 0      # Kalman gain
+    R_gyro_x = 10     # Initial noise
+    H_gyro_x = 1      # Measurement map scalar
+    Q_gyro_x = 10     # Initial estimated covariance
+    P_gyro_x = 0      # Initial error measurement
+    U_hat_gyro_x = 0  # Initial esitmated state
+    
+    
+    K_gyro_y = 0
+    R_gyro_y = 10
+    H_gyro_y = 1
+    Q_gyro_y = 10
+    P_gyro_y = 0
+    U_hat_gyro_y = 0
+
+    
+    K_gyro_z = 0
+    R_gyro_z = 10
+    H_gyro_z = 1
+    Q_gyro_z = 10
+    P_gyro_z = 0
+    U_hat_gyro_z = 0
+
 
     while True:
         if ser.in_waiting > 0:
@@ -268,6 +292,20 @@ if __name__ == "__main__":
             avg_gyro_z /= 10
  
             angle_bs = 0
+            
+            
+            # Applying Kalman filter 
+            K_gyro_x = (P_gyro_x * H_gyro_x) / (H_gyro_x * P_gyro_x * H_gyro_x + R_gyro_x)
+            U_hat_gyro_x =  K_gyro_x * (avg_gyro_x -  H_gyro_x *  U_hat_gyro_x)
+            P_gyro_x = (1 - K_gyro_x * H_gyro_x) * P_gyro_x + Q_gyro_x
+
+            K_gyro_y = (P_gyro_y *  H_gyro_y) / (H_gyro_y * P_gyro_y * H_gyro_y + R_gyro_y)
+            U_hat_gyro_y =  K_gyro_y * (avg_gyro_y - H_gyro_y * U_hat_gyro_y)
+            P_gyro_y = (1 - K_gyro_y * H_gyro_y) * P_gyro_y + Q_gyro_y
+
+            K_gyro_z = (P_gyro_z *  H_gyro_z) / (H_gyro_z * P_gyro_z * H_gyro_z + R_gyro_z)
+            U_hat_gyro_z =  K_gyro_z * (avg_gyro_z - H_gyro_z * U_hat_gyro_z)
+            P_gyro_z = (1 - K_gyro_z * H_gyro_z) * P_gyro_z + Q_gyro_z
             
             T_we, T_es, T_se, T_ew, T_ws_l , T_ws_r = evaluate(avg_angle_we, avg_angle_es, angle_bs, avg_angle_se, avg_angle_ew, lwe, les, lse, lew, T_bs)
             
