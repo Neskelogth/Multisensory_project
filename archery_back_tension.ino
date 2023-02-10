@@ -102,9 +102,6 @@ void loop() {
   /*for each imu print in sequence datas*/
   //EULER is in degrees
 
-  if (micros() - BNO055_last_read >= BNO055_PERIOD_MICROSECS) {
-  BNO055_last_read += BNO055_PERIOD_MICROSECS;
-
   for (int bus = 0; bus < 5; bus++) {
 
     tcaselect(bus);
@@ -112,27 +109,27 @@ void loop() {
     switch (bus) {
     case 0:
       euler0 = bno_elbowL.getVector(Adafruit_BNO055::VECTOR_EULER);
-      Serial.print(" elbowL y = ");
-      Serial.println(euler0.y()*1000);
+      Serial.print("Imu: elbowL = ");
+      Serial.print(euler0.y()*1000);
       break;
       
     case 1:
       euler1 = bno_shoulderL.getVector(Adafruit_BNO055::VECTOR_EULER);
-      Serial.print(" shoulderL y = ");
-      Serial.println(euler1.y()*1000);
+      Serial.print(" shoulderL = ");
+      Serial.print(euler1.y()*1000);
       break;
       
     case 2:
     
       euler2 = bno_shoulderR.getVector(Adafruit_BNO055::VECTOR_EULER);
-      Serial.print(" shoulderR y = ");
-      Serial.println(euler2.y()*1000);
+      Serial.print(" shoulderR = ");
+      Serial.print(euler2.y()*1000);
       break;
       
     case 3:
       
       euler3 = bno_elbowR.getVector(Adafruit_BNO055::VECTOR_EULER);
-      Serial.print(" elbowR y = ");
+      Serial.print(" elbowR = ");
       Serial.println(euler3.y()*1000);
       break;
 
@@ -151,6 +148,5 @@ void loop() {
     }
     //delay(1);  // delay in between reads for stability
    }
-  }
 
 }
