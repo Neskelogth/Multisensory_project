@@ -16,43 +16,46 @@ from struct import pack
 
 def update_joint(angle_imu_we, angle_imu_es, angle_imu_se, angle_imu_ew, wrist_elbow, elbow_shoulder, bs):
     #update angle
-    angle_we = angle_imu_we + angle_imu_es
-    angle_es = angle_imu_es
+    angle_es = 180 - angle_imu_es
+    angle_we = 180 - angle_imu_we
     angle_se = angle_imu_se
     angle_ew = angle_imu_ew + angle_imu_se
 
     #calculate projections
 
     #shoulder points fixed to axis x
-    p_s_r_x, p_s_r_y = point_coordinate(0, bs/2)
-    p_s_l_x, p_s_l_y = point_coordinate(0, bs/2)
+    p_s_r_x, p_s_r_y = point_coordinate(0, bs/2, 0, 0)
+    p_s_l_x, p_s_l_y = point_coordinate(0, bs/2, 0, 0, True)
     
     #elbow points
-    p_e_r_x, p_e_r_y = point_coordinate(angle_se, elbow_shoulder)
-    p_e_l_x, p_e_l_y = point_coordinate(angle_es, elbow_shoulder)
+    p_e_r_x, p_e_r_y = point_coordinate(angle_se, elbow_shoulder, p_s_r_x, p_s_r_y)
+    p_e_l_x, p_e_l_y = point_coordinate(angle_es, elbow_shoulder, p_s_l_x, p_s_l_y, True)
 
     #wrist points predicted
-    p_w_r_x, p_w_r_y = point_coordinate(angle_ew, wrist_elbow)
-    p_w_l_x, p_w_l_y = point_coordinate(angle_we, wrist_elbow)
+    p_w_r_x, p_w_r_y = point_coordinate(angle_ew, wrist_elbow, p_e_r_x, p_e_r_y)
+    p_w_l_x, p_w_l_y = point_coordinate(angle_we, wrist_elbow, p_e_l_x, p_e_l_y, True)
 
     #mirroring data for left arm
     #left -> negative x, right -> positive x
-    p_e_l_x = -1*p_e_l_x
-    p_w_l_x = -1*p_w_l_x
-    p_s_l_x = -1*p_s_l_x
+    
+    
+    
 
     return p_s_r_x, p_s_r_y, p_s_l_x, p_s_l_y, p_e_r_x, p_e_r_y, p_e_l_x, \
                 p_e_l_y, p_w_r_x, p_w_r_y, p_w_l_x, p_w_l_y
 
 #define projections x and y of the joint
-def point_coordinate(angle, l):
+def point_coordinate(angle, l, x_prev, y_prev, left=False):
 
     #convert to radiants
     angle = angle * m.pi / 180
     
     #calculate coordinate x and y
-    x = m.cos(angle)*l
-    y = m.sin(angle)*l
+    if left:
+        x = x_prev - m.cos(angle) * l
+    else:
+        x = x_prev + m.cos(angle) * l
+    y = m.sin(angle) * l + y_prev
 
     return x,y
 
@@ -75,7 +78,7 @@ if __name__ == "__main__":
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     
     #define id for router, and a port to bind
-    host, port = '192.168.0.11', 30080
+    host, port = '192.168.0.10', 30080
     server_address = (host, port)
     
     #arduino serial id
@@ -125,7 +128,7 @@ if __name__ == "__main__":
             avg_gyro_z = 0
             counter = 0
             
-            while(counter < 5*2):
+            while(counter < 10*2):
                 #received from arduino
                 line = ser.readline()#.rstrip()
                 stringo = line.decode('utf-8').strip()
@@ -155,13 +158,13 @@ if __name__ == "__main__":
                         avg_gyro_z += gyro_z
 
             #average
-            avg_angle_we /= 5
-            avg_angle_es /= 5
-            avg_angle_se /= 5
-            avg_angle_ew /= 5
-            avg_gyro_x /= 5
-            avg_gyro_y /= 5
-            avg_gyro_z /= 5
+            avg_angle_we /= 10
+            avg_angle_es /= 10
+            avg_angle_se /= 10
+            avg_angle_ew /= 10
+            avg_gyro_x /= 10
+            avg_gyro_y /= 10
+            avg_gyro_z /= 10
             
             
             # Applying Kalman filter    
