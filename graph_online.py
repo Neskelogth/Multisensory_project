@@ -1,6 +1,5 @@
 from struct import unpack
 import matplotlib.pyplot as plt
-import numpy as np
 import keyboard
 import socket
 
@@ -36,6 +35,7 @@ while True:
     message, address = sock.recvfrom(4096)  # maybe 4096 is to change
     p_s_r_x, p_s_r_y, p_s_l_x, p_s_l_y, p_e_r_x, p_e_r_y, p_e_l_x, p_e_l_y, p_w_r_x, p_w_r_y, p_w_l_x, p_w_l_y, _, _, _ = unpack(
         '15i', message)
+
     p_s_r_x /= 1000
     p_s_r_y /= 1000
     p_s_l_x /= 1000
@@ -50,6 +50,20 @@ while True:
     p_w_r_y /= 1000
     p_w_l_x /= 1000
     p_w_l_y /= 1000
+
+    x_max, x_min = max(p_s_r_x, p_s_l_x, p_e_r_x, p_e_l_x, p_w_r_x, p_w_l_x), min(p_s_r_x, p_s_l_x, p_e_r_x, p_e_l_x, p_w_r_x, p_w_l_x)
+    y_max, y_min = max(p_s_r_y, p_s_l_y, p_e_r_y, p_e_l_y, p_w_r_y, p_w_l_y), min(p_s_r_y, p_s_l_y, p_e_r_y, p_e_l_y, p_w_r_y, p_w_l_y)
+
+    x_diff = True
+    if (y_max - y_min) > (x_max - x_min):
+        x_diff = False
+
+    if x_diff:
+        plt.xlim([x_min - 1, x_max + 1])
+        plt.ylim([x_min - 1, x_max + 1])
+    else:
+        plt.xlim([y_min - 1, y_max + 1])
+        plt.ylim([y_min - 1, y_max + 1])
 
     # generate segments between points
     x_se_r = [p_s_r_x, p_e_r_x]
