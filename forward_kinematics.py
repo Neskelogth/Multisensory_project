@@ -21,6 +21,9 @@ def update_joint(angle_imu_we, angle_imu_es, angle_imu_se, angle_imu_ew, wrist_e
     angle_se = angle_imu_se
     angle_ew = angle_imu_ew + angle_imu_se
 
+    #actuators control on angle value in degree
+    actuator = str(actuator_control(angle_es, angle_we, angle_se, angle_ew ))
+
     #calculate projections
 
     #shoulder points fixed to axis x
@@ -35,21 +38,16 @@ def update_joint(angle_imu_we, angle_imu_es, angle_imu_se, angle_imu_ew, wrist_e
     p_w_r_x, p_w_r_y = point_coordinate(angle_ew, wrist_elbow, p_e_r_x, p_e_r_y)
     p_w_l_x, p_w_l_y = point_coordinate(angle_we, wrist_elbow, p_e_l_x, p_e_l_y, True)
 
-    #mirroring data for left arm
-    #left -> negative x, right -> positive x
-    
-    
-    
-
     return p_s_r_x, p_s_r_y, p_s_l_x, p_s_l_y, p_e_r_x, p_e_r_y, p_e_l_x, \
-                p_e_l_y, p_w_r_x, p_w_r_y, p_w_l_x, p_w_l_y
+                p_e_l_y, p_w_r_x, p_w_r_y, p_w_l_x, p_w_l_y,actuator
 
 #define projections x and y of the joint
 def point_coordinate(angle, l, x_prev, y_prev, left=False):
 
     #convert to radiants
     angle = angle * m.pi / 180
-    
+
+
     #calculate coordinate x and y
     if left:
         x = x_prev - m.cos(angle) * l
@@ -58,6 +56,48 @@ def point_coordinate(angle, l, x_prev, y_prev, left=False):
     y = m.sin(angle) * l + y_prev
 
     return x,y
+
+def actuator_control(angle_es, angle_we, angle_se, angle_ew ):
+
+    one_hot = np.zeros(4)
+    
+    #criterion
+    #from left wrist to right shoulder all point need to be on axis x 
+    #angle between left wrist and right wrist should be between 10/12 degrees
+    
+    #degrees 
+    #define a range where the angle is not accetable
+
+    #for left arm
+
+    if angle_we < -2 or angle_we > 2 :
+        one_hot[0] = 1
+    else:
+        one_hot[0] = 0
+
+    if angle_es < -4 or angle_es > 4 :
+        one_hot[1] = 1
+    else:
+        one_hot[1] = 0
+
+    #for right arm
+    
+    if angle_se < 168 or angle_se > 178:
+        one_hot[2] = 1
+    else:
+        one_hot[2] = 0
+    
+    #considera per semplificazione un traingolo scaleno, di cui si conoscono 2 angoli 
+    #per calcolare il terzo angolo sottrai a 180 gli altri due angoli
+    #l'angolo tra i due polsi sta tra 10 e 12 gradi
+
+    #range of +-5 degrees
+    if angle_ew < ((180 - angle_se - 12) - 5) or angle_ew > ((180 - angle_se - 12) + 5) :
+        one_hot[3] = 1
+    else:
+        one_hot[3] = 0
+
+    return one_hot
 
 def init():
     
@@ -83,6 +123,10 @@ if __name__ == "__main__":
     
     #arduino serial id
     name = '/dev/ttyACM0'
+
+    #second arduino communication for vibration actuations
+    ser2=serial.Serial('/dev/ttyACM1',9600,timeout=1)'
+    ser2.reset_input_buffer()
     
     #from serial take angles
     ser = serial.Serial(name, 9600, timeout=1)
@@ -182,8 +226,12 @@ if __name__ == "__main__":
             
             #extract point positions
             p_s_r_x, p_s_r_y, p_s_l_x, p_s_l_y, p_e_r_x, p_e_r_y, p_e_l_x, \
-                p_e_l_y, p_w_r_x, p_w_r_y, p_w_l_x, p_w_l_y = update_joint(avg_angle_we, \
+                p_e_l_y, p_w_r_x, p_w_r_y, p_w_l_x, p_w_l_y, actuator = update_joint(avg_angle_we, \
                     avg_angle_es, avg_angle_se, avg_angle_ew, wrist_elbow, elbow_shoulder, bs)  
+            
+            #write in second serial for actuators arduino
+            #actuator is a string -> '0000'
+            ser2.write(actuator.encode('utf-8'))
             
             #convert data for wifi
             p_s_r_x = int(p_s_r_x * 1000)
