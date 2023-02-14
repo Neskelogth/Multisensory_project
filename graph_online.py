@@ -52,19 +52,19 @@ while True:
     p_w_l_y /= 1000
 
     # generate segments between points
-    x_se_r = [-p_s_r_x, -p_e_r_x]
+    x_se_r = [p_s_r_x, p_e_r_x]
     y_se_r = [p_s_r_y, p_e_r_y]
 
-    x_ew_r = [-p_e_r_x, -p_w_r_x]
+    x_ew_r = [p_e_r_x, p_w_r_x]
     y_ew_r = [p_e_r_y, p_w_r_y]
 
-    x_se_l = [-p_s_l_x, -p_e_l_x]
+    x_se_l = [p_s_l_x, p_e_l_x]
     y_se_l = [p_s_l_y, p_e_l_y]
 
-    x_ew_l = [-p_e_l_x, -p_w_l_x]
+    x_ew_l = [p_e_l_x, p_w_l_x]
     y_ew_l = [p_e_l_y, p_w_l_y]
 
-    x_ss = [-p_s_l_x, -p_s_r_x]
+    x_ss = [p_s_l_x, p_s_r_x]
     y_ss = [p_s_l_y, p_s_r_y]
 
     # updating data values
