@@ -25,14 +25,23 @@ args = parser.parse_args()
 client = udp_client.SimpleUDPClient(args.ip, args.port)
 client.send_message("/on", 1)
 
+# For bow
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-
 # Bind the socket to the port
 host, port = '0.0.0.0', 65000
 server_address = (host, port)
 
 print(f'Starting UDP server on {host} port {port}')
 sock.bind(server_address)
+
+# For shoulders
+sock2 = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+# Bind the socket to the port
+port2 = 30080
+server_address2 = (host, port2)
+
+print(f'Starting UDP server on {host} port {port2}')
+sock2.bind(server_address2)
 
 # enable interactive mode
 plt.ion()
@@ -67,6 +76,9 @@ axs[1][0].grid(linestyle = '--')
 axs[1][0].set_xticks(np.arange(-1,1,0.25))
 axs[1][0].set_yticks(np.arange(-1,1,0.25))
 
+axs[1][1].set_xlabel("X-axis")
+axs[1][1].set_ylabel("Y-axis")
+
 min_y, max_y = 0, 0
 min_x, max_x = 0, 0
 min_z, max_z = 0, 0
@@ -76,6 +88,78 @@ while True:
 
     #message, address = sock.recvfrom(4096)  # maybe 4096 is to change  #TO UNCOMMENT
     #gyro_x, gyro_y, gyro_z, _, _, _ = unpack('6i', message)    #TO UNCOMMENT
+
+    axs[1][1].clear()
+    # message, address = sock.recvfrom(4096)  # maybe 4096 is to change #TO UNCOMMENT
+    # p_s_r_x, p_s_r_y, p_s_l_x, p_s_l_y, p_e_r_x, p_e_r_y, p_e_l_x, p_e_l_y, p_w_r_x, p_w_r_y, p_w_l_x, p_w_l_y, _, _, _ = unpack( #TO UNCOMMENT
+    #     '15i', message) #TO UNCOMMENT
+
+    p_s_r_x = random.uniform(0,1000)
+    p_s_r_y = random.uniform(0,1000)
+    p_s_l_x = random.uniform(0,1000)
+    p_s_l_y = random.uniform(0,1000)
+
+    p_e_r_x = random.uniform(0,1000)
+    p_e_r_y = random.uniform(0,1000)
+    p_e_l_x = random.uniform(0,1000)
+    p_e_l_y = random.uniform(0,1000)
+
+    p_w_r_x = random.uniform(0,1000)
+    p_w_r_y = random.uniform(0,1000)
+    p_w_l_x = random.uniform(0,1000)
+    p_w_l_y = random.uniform(0,1000)
+
+    p_s_r_x /= 1000
+    p_s_r_y /= 1000
+    p_s_l_x /= 1000
+    p_s_l_y /= 1000
+
+    p_e_r_x /= 1000
+    p_e_r_y /= 1000
+    p_e_l_x /= 1000
+    p_e_l_y /= 1000
+
+    p_w_r_x /= 1000
+    p_w_r_y /= 1000
+    p_w_l_x /= 1000
+    p_w_l_y /= 1000
+
+    x_max, x_min = max(p_s_r_x, p_s_l_x, p_e_r_x, p_e_l_x, p_w_r_x, p_w_l_x), min(p_s_r_x, p_s_l_x, p_e_r_x, p_e_l_x, p_w_r_x, p_w_l_x)
+    y_max, y_min = max(p_s_r_y, p_s_l_y, p_e_r_y, p_e_l_y, p_w_r_y, p_w_l_y), min(p_s_r_y, p_s_l_y, p_e_r_y, p_e_l_y, p_w_r_y, p_w_l_y)
+
+    x_diff = True
+    if (y_max - y_min) > (x_max - x_min):
+        x_diff = False
+
+    if x_diff:
+        axs[1][1].set_xlim([x_min - 1, x_max + 1])
+        axs[1][1].set_ylim([x_min - 1, x_max + 1])
+    else:
+        axs[1][1].set_xlim([y_min - 1, y_max + 1])
+        axs[1][1].set_ylim([y_min - 1, y_max + 1])
+
+    # generate segments between points
+    x_se_r = [p_s_r_x, p_e_r_x]
+    y_se_r = [p_s_r_y, p_e_r_y]
+
+    x_ew_r = [p_e_r_x, p_w_r_x]
+    y_ew_r = [p_e_r_y, p_w_r_y]
+
+    x_se_l = [p_s_l_x, p_e_l_x]
+    y_se_l = [p_s_l_y, p_e_l_y]
+
+    x_ew_l = [p_e_l_x, p_w_l_x]
+    y_ew_l = [p_e_l_y, p_w_l_y]
+
+    x_ss = [p_s_l_x, p_s_r_x]
+    y_ss = [p_s_l_y, p_s_r_y]
+
+    # updating data values
+    axs[1][1].plot(x_se_r, y_se_r, 'ro-')
+    axs[1][1].plot(x_ew_r, y_ew_r, 'ro-')
+    axs[1][1].plot(x_se_l, y_se_l, 'ro-')
+    axs[1][1].plot(x_ew_l, y_ew_l, 'ro-')
+    axs[1][1].plot(x_ss, y_ss, 'ro-')
 
     gyro_x = random.uniform(-1000,1000) #ONLY FOR TESTING
     gyro_y = random.uniform(-1000,1000) #ONLY FOR TESTING
