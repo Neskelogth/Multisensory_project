@@ -54,16 +54,11 @@ while True:
     x_max, x_min = max(p_s_r_x, p_s_l_x, p_e_r_x, p_e_l_x, p_w_r_x, p_w_l_x), min(p_s_r_x, p_s_l_x, p_e_r_x, p_e_l_x, p_w_r_x, p_w_l_x)
     y_max, y_min = max(p_s_r_y, p_s_l_y, p_e_r_y, p_e_l_y, p_w_r_y, p_w_l_y), min(p_s_r_y, p_s_l_y, p_e_r_y, p_e_l_y, p_w_r_y, p_w_l_y)
 
-    x_diff = True
-    if (y_max - y_min) > (x_max - x_min):
-        x_diff = False
+    real_min = min(x_min, y_min)
+    real_max = max(x_max, y_max)
 
-    if x_diff:
-        plt.xlim([x_min - 1, x_max + 1])
-        plt.ylim([x_min - 1, x_max + 1])
-    else:
-        plt.xlim([y_min - 1, y_max + 1])
-        plt.ylim([y_min - 1, y_max + 1])
+    plt.xlim([real_min - 1, real_max + 1])
+    plt.ylim([real_min - 1, real_max + 1])
 
     # generate segments between points
     x_se_r = [p_s_r_x, p_e_r_x]
@@ -94,7 +89,7 @@ while True:
     # to flush the GUI events
     fig.canvas.flush_events()
 
-    ####################invia i dati ai sensori di vibrazione################################
+    # invia i dati ai sensori di vibrazione ################################
     # dove c'è un controllo sulla soglia
 
     if keyboard.is_pressed('q'):

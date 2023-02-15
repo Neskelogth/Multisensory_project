@@ -125,7 +125,7 @@ if __name__ == "__main__":
     name = '/dev/ttyACM0'
 
     #second arduino communication for vibration actuations
-    ser2=serial.Serial('/dev/ttyACM1',9600,timeout=1)'
+    ser2=serial.Serial('/dev/ttyACM1',9600,timeout=1)
     ser2.reset_input_buffer()
     
     #from serial take angles
