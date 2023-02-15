@@ -14,12 +14,15 @@ import socket
 from struct import pack
 
 
-def update_joint(angle_imu_we, angle_imu_es, angle_imu_se, angle_imu_ew, wrist_elbow, elbow_shoulder, bs):
+def update_joint(prev_angle_se, prev_angle_es, prev_angle_ew, prev_angle_we, angle_imu_we, angle_imu_es, angle_imu_se, angle_imu_ew, wrist_elbow, elbow_shoulder, bs):
     #update angle
-    angle_es = 180 - angle_imu_es
-    angle_we = 180 - angle_imu_we
-    angle_se = angle_imu_se
-    angle_ew = angle_imu_ew + angle_imu_se
+    
+    angle_es = prev_angle_es + 180 - angle_imu_es
+    angle_we = prev_angle_we + 180 - angle_imu_we
+    angle_se = prev_angle_se + angle_imu_se
+    angle_ew = prev_angle_ew + angle_imu_ew + angle_imu_se
+
+    print('es', angle_es, 'we', angle_we, 'se', angle_se, 'ew', angle_ew)
 
     #actuators control on angle value in degree
     actuator = str(actuator_control(angle_es, angle_we, angle_se, angle_ew ))
@@ -38,8 +41,8 @@ def update_joint(angle_imu_we, angle_imu_es, angle_imu_se, angle_imu_ew, wrist_e
     p_w_r_x, p_w_r_y = point_coordinate(angle_ew, wrist_elbow, p_e_r_x, p_e_r_y)
     p_w_l_x, p_w_l_y = point_coordinate(angle_we, wrist_elbow, p_e_l_x, p_e_l_y, True)
 
-    return p_s_r_x, p_s_r_y, p_s_l_x, p_s_l_y, p_e_r_x, p_e_r_y, p_e_l_x, \
-                p_e_l_y, p_w_r_x, p_w_r_y, p_w_l_x, p_w_l_y,actuator
+    return prev_angle_se, prev_angle_es, prev_angle_ew, prev_angle_we, p_s_r_x, p_s_r_y, p_s_l_x, p_s_l_y, p_e_r_x, p_e_r_y, p_e_l_x, \
+                p_e_l_y, p_w_r_x, p_w_r_y, p_w_l_x, p_w_l_y, actuator
 
 #define projections x and y of the joint
 def point_coordinate(angle, l, x_prev, y_prev, left=False):
@@ -125,8 +128,8 @@ if __name__ == "__main__":
     name = '/dev/ttyACM0'
 
     #second arduino communication for vibration actuations
-    ser2=serial.Serial('/dev/ttyACM1',9600,timeout=1)
-    ser2.reset_input_buffer()
+    # ser2=serial.Serial('/dev/ttyACM1',9600,timeout=1)
+    # ser2.reset_input_buffer()
     
     #from serial take angles
     ser = serial.Serial(name, 9600, timeout=1)
@@ -158,11 +161,16 @@ if __name__ == "__main__":
     Q_gyro_z = 10
     P_gyro_z = 0
     U_hat_gyro_z = 0
-
+       
+    prev_angle_se = 0
+    prev_angle_es = 0
+    prev_angle_we = 0
+    prev_angle_ew = 0
+       
     ############################  loop  ##################################
     while True:
         if ser.in_waiting > 0:
-
+               
             avg_angle_we = 0
             avg_angle_es = 0
             avg_angle_se = 0
@@ -226,12 +234,12 @@ if __name__ == "__main__":
             
             #extract point positions
             p_s_r_x, p_s_r_y, p_s_l_x, p_s_l_y, p_e_r_x, p_e_r_y, p_e_l_x, \
-                p_e_l_y, p_w_r_x, p_w_r_y, p_w_l_x, p_w_l_y, actuator = update_joint(avg_angle_we, \
+                prev_angle_se, prev_angle_es, prev_angle_ew, prev_angle_we, p_e_l_y, p_w_r_x, p_w_r_y, p_w_l_x, p_w_l_y, actuator = update_joint(prev_angle_se, prev_angle_es, prev_angle_ew, prev_angle_we, avg_angle_we, \
                     avg_angle_es, avg_angle_se, avg_angle_ew, wrist_elbow, elbow_shoulder, bs)  
             
             #write in second serial for actuators arduino
             #actuator is a string -> '0000'
-            ser2.write(actuator.encode('utf-8'))
+            # ser2.write(actuator.encode('utf-8'))
             
             #convert data for wifi
             p_s_r_x = int(p_s_r_x * 1000)
