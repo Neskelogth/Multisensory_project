@@ -21,14 +21,6 @@ Adafruit_BNO055 bno_shoulderR = Adafruit_BNO055(55);
 Adafruit_BNO055 bno_elbowR = Adafruit_BNO055(55);
 Adafruit_BNO055 bno_bow = Adafruit_BNO055(55);
 
-//define vector to take angles from imu sensors
-imu::Vector<3> euler0;
-imu::Vector<3> euler1;
-imu::Vector<3> euler2;
-imu::Vector<3> euler3;
-imu::Vector<3> euler4;
-
-
 /**************************************************************************/
 
 
@@ -85,15 +77,15 @@ void setup() {
   /* Setup of the digital sensors */
   /*create a function to call for each sensor*/
   init_sensor(0, bno_elbowL);
-  delay(10);
+  delay(5);
   init_sensor(1, bno_shoulderL);
-  delay(10);
+  delay(5);
   init_sensor(2, bno_shoulderR);
-  delay(10);
+  delay(5);
   init_sensor(3, bno_elbowR);
-  delay(10);
+  delay(5);
   init_sensor(4, bno_bow);
-  delay(10);
+  delay(5);
 
 }
 
@@ -107,46 +99,56 @@ void loop() {
     tcaselect(bus);
 
     switch (bus) {
+
+     /*
+     x = Yaw, y = Roll, z = pitch 
+     
+     The Yaw values are between 0° to +360°
+     The Roll values are between -90° and +90°
+     The Pitch values are between -180° and +180°
+    */ 
+    
     case 0:
-      euler0 = bno_elbowL.getVector(Adafruit_BNO055::VECTOR_EULER);
+      sensors_event_t event0;
+      bno_elbowL.getEvent(&event0, Adafruit_BNO055::VECTOR_EULER);
       Serial.print("Imu: elbowL = ");
-      Serial.print(euler0.y()*1000);
+      Serial.print(event0.orientation.x*1000);
       break;
       
     case 1:
-      euler1 = bno_shoulderL.getVector(Adafruit_BNO055::VECTOR_EULER);
+      sensors_event_t event1;
+      bno_shoulderL.getEvent(&event1, Adafruit_BNO055::VECTOR_EULER);
       Serial.print(" shoulderL = ");
-      Serial.print(euler1.y()*1000);
+      Serial.print(event1.orientation.x*1000);
       break;
       
     case 2:
-    
-      euler2 = bno_shoulderR.getVector(Adafruit_BNO055::VECTOR_EULER);
+      sensors_event_t event2;
+      bno_shoulderR.getEvent(&event2,  Adafruit_BNO055::VECTOR_EULER);  
       Serial.print(" shoulderR = ");
-      Serial.print(euler2.y()*1000);
+      Serial.print(event2.orientation.x*1000);
       break;
       
     case 3:
-      
-      euler3 = bno_elbowR.getVector(Adafruit_BNO055::VECTOR_EULER);
+      sensors_event_t event3;
+      bno_elbowR.getEvent(&event3,  Adafruit_BNO055::VECTOR_EULER);
       Serial.print(" elbowR = ");
-      Serial.println(euler3.y()*1000);
+      Serial.println(event3.orientation.x*1000);
       break;
 
     case 4:
-      
-      euler4 = bno_bow.getVector(Adafruit_BNO055::VECTOR_EULER);
+      sensors_event_t event4;
+      bno_bow.getEvent(&event4,  Adafruit_BNO055::VECTOR_EULER);
       Serial.print("Bow: x = ");
-      Serial.print(euler4.x()*1000);
+      Serial.print(event4.orientation.x*1000);
       Serial.print(" y = ");
-      Serial.print(euler4.y()*1000);
+      Serial.print(event4.orientation.y*1000);
       Serial.print(" z = ");
-      Serial.println(euler4.z()*1000);
-      
+      Serial.println(event4.orientation.z*1000);   
       break;
       
     }
-    //delay(1);  // delay in between reads for stability
+    delay(1);  // delay in between reads for stability
    }
 
 }
