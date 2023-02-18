@@ -105,7 +105,7 @@ void loop() {
 
   // print out the value you read:
   Serial.print("X = ");
-  Serial.print(x);
+  Serial.print(x*1000);
   Serial.print(" Y = ");
-  Serial.println(y);
+  Serial.println(y*1000);
 }
