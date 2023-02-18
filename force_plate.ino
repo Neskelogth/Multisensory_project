@@ -75,33 +75,48 @@ float force(float resistance, float conduttance){
 
 // the loop routine runs over and over again forever:
 void loop() {
-  float fsrA = 0;
-  float fsrC = 0;
-  float fsrE = 0;
-  float fsrG = 0;
+  float x=0;
+  float y=0;
+
+  for(int i=0;i<avg_size;i++){
+    float fsrA = 0;
+    float fsrC = 0;
+    float fsrE = 0;
+    float fsrG = 0;
+    
+    fsrA = analogRead(A0) * VCC / 1023.0;
+    fsrC = analogRead(A1) * VCC / 1023.0;
+    fsrE = analogRead(A2) * VCC / 1023.0;
+    fsrG = analogRead(A3) * VCC / 1023.0;
+
+    float fsrRA = R_DIV * (VCC / fsrA - 1.0);
+    float fsrRC = R_DIV * (VCC / fsrC - 1.0);
+    float fsrRE = R_DIV * (VCC / fsrE - 1.0);
+    float fsrRG = R_DIV * (VCC / fsrG - 1.0);
+
+    float fsrCA = 1.0 / fsrRA;
+    float fsrCC = 1.0 / fsrRC;
+    float fsrCE = 1.0 / fsrRE;
+    float fsrCG = 1.0 / fsrRG;
+
+    float fsrFA = force(fsrRA, fsrCA)*taraA/1000*9.81;
+    float fsrFC = force(fsrRC, fsrCC)*taraC/1000*9.81;
+    float fsrFE = force(fsrRE, fsrCE)*taraE/1000*9.81;
+    float fsrFG = force(fsrRG, fsrCG)*taraG/1000*9.81;
   
-  fsrA = analogRead(A0) * VCC / 1023.0;
-  fsrC = analogRead(A1) * VCC / 1023.0;
-  fsrE = analogRead(A2) * VCC / 1023.0;
-  fsrG = analogRead(A3) * VCC / 1023.0;
+    x += (fsrFC*0.60 + fsrFE*0.60 - (7.1*9.81*0.60/2))/(63*9.81);
+    y += (fsrFA*0.60 + fsrFC*0.60 - (7.1*9.81*0.60/2))/(63*9.81);
 
-  float fsrRA = R_DIV * (VCC / fsrA - 1.0);
-  float fsrRC = R_DIV * (VCC / fsrC - 1.0);
-  float fsrRE = R_DIV * (VCC / fsrE - 1.0);
-  float fsrRG = R_DIV * (VCC / fsrG - 1.0);
+    delay(5);
+  }
 
-  float fsrCA = 1.0 / fsrRA;
-  float fsrCC = 1.0 / fsrRC;
-  float fsrCE = 1.0 / fsrRE;
-  float fsrCG = 1.0 / fsrRG;
+  x /=avg_size;
+  y /= avg_size;
 
-  float fsrFA = force(fsrRA, fsrCA)*taraA/1000*9.81;
-  float fsrFC = force(fsrRC, fsrCC)*taraC/1000*9.81;
-  float fsrFE = force(fsrRE, fsrCE)*taraE/1000*9.81;
-  float fsrFG = force(fsrRG, fsrCG)*taraG/1000*9.81;
- 
-  float x = (fsrFC*0.60 + fsrFE*0.60 - (7.1*9.81*0.60/2))/(63*9.81);
-  float y = (fsrFA*0.60 + fsrFC*0.60 - (7.1*9.81*0.60/2))/(63*9.81);
+  //Serial.println(fsrFA);
+  //Serial.println(fsrFC);
+  //Serial.println(fsrFE);
+  //Serial.println(fsrFG);
 
   // print out the value you read:
   Serial.print("X = ");
