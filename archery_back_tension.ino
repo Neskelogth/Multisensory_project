@@ -63,8 +63,6 @@ void init_sensor(uint8_t i, Adafruit_BNO055 bno){
     Serial.println(F(" NOT detected"));*/
     while(1);
   }
-  
-  delay(1000);
 }
 
 

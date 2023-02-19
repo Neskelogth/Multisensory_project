@@ -8,11 +8,21 @@ Created on Sun Jan 15 20:00:35 2023
 import numpy as np
 from math import pi
 import math as m
+import time
 
 import serial
 import socket
 from struct import pack
 
+
+def circular_diff(prev, new):
+    
+    diff = new - prev
+    if diff > 180:
+        diff -= 360
+    
+    return diff
+    
 
 def update_joint(angle_imu_we, angle_imu_es, angle_imu_se, angle_imu_ew, wrist_elbow, elbow_shoulder, bs):
     #update angle
@@ -25,7 +35,7 @@ def update_joint(angle_imu_we, angle_imu_es, angle_imu_se, angle_imu_ew, wrist_e
     #print('es', angle_es, 'we', angle_we, 'se', angle_se, 'ew', angle_ew)
 
     #actuators control on angle value in degree
-    actuator = str(actuator_control(angle_es, angle_we, angle_se, angle_ew ))
+    actuator = actuator_control(angle_es, angle_we, angle_se, angle_ew )
 
     #calculate projections
 
@@ -105,19 +115,19 @@ def actuator_control(angle_es, angle_we, angle_se, angle_ew ):
 
     #for left arm
 
-    if angle_we < -2 or angle_we > 2 :
+    if abs(circular_diff(angle_we, 0)) > 2 :  #
         one_hot[0] = 1
     else:
         one_hot[0] = 0
 
-    if angle_es < -4 or angle_es > 4 :
+    if abs(circular_diff(angle_we, 0)) > 4 : #abs(circular_diff(angle_we, 0)) > 4
         one_hot[1] = 1
     else:
         one_hot[1] = 0
 
     #for right arm
     
-    if angle_se < 168 or angle_se > 178:
+    if abs(circular_diff(angle_we, 173)) > 5: #abs(circular_diff(angle_we, 173)) > 5
         one_hot[2] = 1
     else:
         one_hot[2] = 0
@@ -131,8 +141,17 @@ def actuator_control(angle_es, angle_we, angle_se, angle_ew ):
         one_hot[3] = 1
     else:
         one_hot[3] = 0
-
-    return one_hot
+        
+    string_to_return = ''   
+     
+    for el in one_hot:
+    
+        if el == 1:
+            string_to_return += '1'
+        else:
+            string_to_return += '0'
+    
+    return string_to_return
 
 def init():
     
@@ -145,7 +164,8 @@ def init():
 
 
 if __name__ == "__main__":
-
+    
+    # atexit.register(stop_teensy)
     ############################  setup  ##################################
     wrist_elbow, elbow_shoulder, bs = init()
     
@@ -158,41 +178,17 @@ if __name__ == "__main__":
     
     #arduino serial id
     name = '/dev/ttyACM0'
-
-    #second arduino communication for vibration actuations
-    # ser2=serial.Serial('/dev/ttyACM1',9600,timeout=1)
-    # ser2.reset_input_buffer()
-    
-    #from serial take angles
     ser = serial.Serial(name, 9600, timeout=1)
     ser.reset_input_buffer()
     
+    #second arduino communication for vibration actuations
+    ser2=serial.Serial('/dev/ttyACM1',9600,timeout=1)
+    ser2.reset_input_buffer()
+   
+    
+    threshold = 1
+    
     print('Starting Serial connection...')
-
-    #init Kalman filter for bow imu
-    
-    K_gyro_x = 0      # Kalman gain
-    R_gyro_x = 10     # Initial noise
-    H_gyro_x = 1      # Measurement map scalar
-    Q_gyro_x = 10     # Initial estimated covariance
-    P_gyro_x = 0      # Initial error measurement
-    U_hat_gyro_x = 0  # Initial esitmated state
-    
-    
-    K_gyro_y = 0
-    R_gyro_y = 10
-    H_gyro_y = 1
-    Q_gyro_y = 10
-    P_gyro_y = 0
-    U_hat_gyro_y = 0
-
-    
-    K_gyro_z = 0
-    R_gyro_z = 10
-    H_gyro_z = 1
-    Q_gyro_z = 10
-    P_gyro_z = 0
-    U_hat_gyro_z = 0
        
     prev_angle_se = 0
     prev_angle_es = 0
@@ -203,6 +199,7 @@ if __name__ == "__main__":
     prev_p_e_l_x, prev_p_e_l_y = 0,0
     prev_p_w_r_x, prev_p_w_r_y = 0,0
     prev_p_w_l_x, prev_p_w_l_y = 0,0
+    
        
     ############################  loop  ##################################
     flag = 1
@@ -218,34 +215,66 @@ if __name__ == "__main__":
             avg_gyro_z = 0
             counter = 0
             
-            while(counter < 10*2):
+            while(counter < 1*2):
                 #received from arduino
-                line = ser.readline()#.rstrip()
-                stringo = line.decode('utf-8').strip()
+                line = ser.readline()
+                stringo = line.rstrip()
                 if(stringo):
                     counter += 1
                     #splitta gli spazi 
                     line = stringo.split()
                     #control from which imus is sent
                     if (str(line[0]) == 'Imu:'): 
-                        angle_we = int(float(line[3]))
-                        angle_es = int(float(line[6]))
-                        angle_se = int(float(line[9]))
-                        angle_ew = int(float(line[12]))
-    
-                        avg_angle_we += angle_we/1000
-                        avg_angle_es += angle_es/1000
-                        avg_angle_se += angle_se/1000
-                        avg_angle_ew += angle_ew/1000
+                        angle_we = int(float(line[3])) / 1000
+                        angle_es = int(float(line[6])) / 1000
+                        angle_se = int(float(line[9])) / 1000
+                        angle_ew = int(float(line[12])) / 1000
                         
-                    if(str(line[0]) == 'Bow:'): 
+                        se_diff = circular_diff(prev_angle_se, angle_se)
+                        es_diff = circular_diff(prev_angle_es, angle_es)
+                        we_diff = circular_diff(prev_angle_we, angle_we)
+                        ew_diff = circular_diff(prev_angle_ew, angle_ew)
+                        
+                        if abs(we_diff) > threshold:
+                        
+                            avg_angle_we += angle_we
+                            prev_angle_we = angle_we
+                        else:
+                            
+                            avg_angle_we += prev_angle_we
+                        
+                        if abs(ew_diff) > threshold:
+                        
+                            avg_angle_ew += angle_ew
+                            prev_angle_ew = angle_ew
+                        else:
+                            
+                            avg_angle_we += prev_angle_we
+                        
+                        if abs(es_diff) > threshold:
+                        
+                            avg_angle_es += angle_es
+                            prev_angle_es = angle_es
+                        else:
+                        
+                            avg_angle_es += prev_angle_es
+                        
+                        if abs(se_diff) > threshold:
+                        
+                            avg_angle_se += angle_se
+                            prev_angle_se = angle_se
+                        else:
+                            
+                            avg_angle_se += prev_angle_se
+                    elif(str(line[0]) == 'Bow:'): 
                         gyro_x = int(float(line[3]))
                         gyro_y = int(float(line[6]))
                         gyro_z = int(float(line[9]))
                         
-                        avg_gyro_x += gyro_x
-                        avg_gyro_y += gyro_y
-                        avg_gyro_z += gyro_z
+                        avg_gyro_x += gyro_x / 1000
+                        avg_gyro_y += gyro_y / 1000
+                        avg_gyro_z += gyro_z / 1000
+                        
                     if counter == 1 and flag == 1:
                         offset_we = angle_we
                         offset_es = angle_es
@@ -255,13 +284,13 @@ if __name__ == "__main__":
 
 
             #average
-            avg_angle_we = avg_angle_we/10 #- offset_we
-            avg_angle_es = avg_angle_es/10 #- offset_es
-            avg_angle_se = avg_angle_se/10 #- offset_ew
-            avg_angle_ew = avg_angle_ew/10 #- offset_ew
-            avg_gyro_x /= 10
-            avg_gyro_y /= 10
-            avg_gyro_z /= 10
+            avg_angle_we = avg_angle_we/1 #- offset_we
+            avg_angle_es = avg_angle_es/1 #- offset_es
+            avg_angle_se = avg_angle_se/1 #- offset_ew
+            avg_angle_ew = avg_angle_ew/1 #- offset_ew
+            avg_gyro_x /= 1
+            avg_gyro_y /= 1
+            avg_gyro_z /= 1
 
             #init point
             if flag == 1:
@@ -271,22 +300,7 @@ if __name__ == "__main__":
                      avg_angle_es, avg_angle_se, avg_angle_ew, wrist_elbow, elbow_shoulder, bs)
                 print("init done")
             
-            
-            # Applying Kalman filter    
-            K_gyro_x = (P_gyro_x * H_gyro_x) / (H_gyro_x * P_gyro_x * H_gyro_x + R_gyro_x)
-            U_hat_gyro_x =  K_gyro_x * (avg_gyro_x -  H_gyro_x *  U_hat_gyro_x)
-            P_gyro_x = (1 - K_gyro_x * H_gyro_x) * P_gyro_x + Q_gyro_x
-
-            K_gyro_y = (P_gyro_y *  H_gyro_y) / (H_gyro_y * P_gyro_y * H_gyro_y + R_gyro_y)
-            U_hat_gyro_y =  K_gyro_y * (avg_gyro_y - H_gyro_y * U_hat_gyro_y)
-            P_gyro_y = (1 - K_gyro_y * H_gyro_y) * P_gyro_y + Q_gyro_y
-
-            K_gyro_z = (P_gyro_z *  H_gyro_z) / (H_gyro_z * P_gyro_z * H_gyro_z + R_gyro_z)
-            U_hat_gyro_z =  K_gyro_z * (avg_gyro_z - H_gyro_z * U_hat_gyro_z)
-            P_gyro_z = (1 - K_gyro_z * H_gyro_z) * P_gyro_z + Q_gyro_z 
-            
             #no angle but difference with prevoius angle!!!!
-            print("braccia",avg_angle_ew,avg_angle_se)
             #calculate difference
             diff_angle_se = 180 -(avg_angle_se - prev_angle_se)
             diff_angle_es = avg_angle_es - prev_angle_es
@@ -299,6 +313,9 @@ if __name__ == "__main__":
             p_e_l_x, p_e_l_y = point_init(180 - avg_angle_es, wrist_elbow)
             p_w_r_x, p_w_r_y = point_init(avg_angle_ew + avg_angle_se , wrist_elbow, True)
             p_w_l_x, p_w_l_y = point_init(180 - (avg_angle_es + avg_angle_we), wrist_elbow)
+            
+            gyro_x, gyro_z = point_init(avg_gyro_x, 1)
+            _, gyro_y = point_init(avg_gyro_z, 1)    
 
             p_e_r_x += bs/2
             p_e_l_x -= bs/2
@@ -309,9 +326,10 @@ if __name__ == "__main__":
             p_w_l_x += p_e_l_x
             p_w_r_y += p_e_r_y
             p_w_l_y += p_e_l_y
+            
+            print('we', avg_angle_we, 'es', avg_angle_es, 'se', avg_angle_se, 'ew', avg_angle_ew)
 
-
-            #   print(p_w_l_x, p_w_l_y)
+            #print(p_w_l_x, p_w_l_y)
 
             prev_angle_se = avg_angle_se
             prev_angle_es = avg_angle_es
@@ -319,8 +337,10 @@ if __name__ == "__main__":
             prev_angle_ew = avg_angle_ew
 
             #write in second serial for actuators arduino
-            #actuator is a string -> '0000'
-            # ser2.write(actuator.encode('utf-8'))
+            # actuator is a string -> '0000'
+            # actuator = '1111'
+            actuator = actuator_control(avg_angle_we, avg_angle_es, avg_angle_se, avg_angle_ew)
+            ser2.write(actuator)#actuator.encode('utf-8'))
             
             #convert data for wifi            
             #send to pc from raspberry
@@ -338,8 +358,8 @@ if __name__ == "__main__":
             int(p_w_r_y * 1000),
             int(p_w_l_x * 1000),
             int(p_w_l_y * 1000),
-            int(U_hat_gyro_x), 
-            int(U_hat_gyro_y), 
-            int(U_hat_gyro_z))
+            int(gyro_x * 1000), 
+            int(gyro_y * 1000), 
+            int(gyro_z * 1000))
             
             sock.sendto(message, server_address)
