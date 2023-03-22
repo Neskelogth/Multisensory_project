@@ -3,7 +3,6 @@ import socket
 import select
 import math
 import time
-import asyncio
 
 import keyboard
 from pythonosc import udp_client
@@ -21,7 +20,6 @@ def dump_params_to_file(params, file):
 
 
 def take_params(params, configuration_file, save_params=False):
-
     for key in params:
         if key == 'lefthanded':
             val = input("Is the archer lefthanded?(y/n) ") == 'y'
@@ -46,11 +44,10 @@ def create_socket(server_host, server_port):
 
 
 def point_init(angle, length, right=False):
-
     if angle > 360:
         angle = angle % 360
 
-    # convert to radiants
+    # convert to radians
     # (math.pi / 180) = 0.0174533
     angle = angle * 0.0174533
 
@@ -64,7 +61,6 @@ def point_init(angle, length, right=False):
 
 
 def find_first_free_index(dictionaries, barycenter):
-
     index = -1
     for i in range(len(dictionaries)):
 
@@ -80,38 +76,36 @@ def find_first_free_index(dictionaries, barycenter):
     return index
 
 
-def complete(dict):
-    return len(list(dict.keys())) == 17
+def complete(dictionary):
+    return len(list(dictionary.keys())) == 17
 
 
-async def write_data(path, dict):
-
+async def write_data(path, dictionary):
     with open(path, 'a') as target:
-        target.write(dict['barycenter_x'] + ',' + dict['barycenter_y'] + ',' + \
-                     dict['bow_x'] + ',' + dict['bow_y'] + ',' + dict['bow_z'] + ',' + \
-                     dict['left_shoulder_positions_x'] + ',' + dict['left_shoulder_positions_y'] + ',' + \
-                     dict['right_shoulder_positions_x'] + ',' + dict['right_shoulder_positions_y'] + ',' + \
-                     dict['left_elbow_positions_x'] + ',' + dict['left_elbow_positions_y'] + ',' + \
-                     dict['right_elbow_positions_x'] + ',' + dict['right_elbow_positions_y'] + ',' + \
-                     dict['left_wrist_positions_x'] + ',' + dict['left_wrist_positions_y'] + ',' + \
-                     dict['right_wrist_positions_x'] + ',' + dict['right_wrist_positions_y'])
+        target.write(dictionary['barycenter_x'] + ',' + dictionary['barycenter_y'] + ',' +
+                     dictionary['bow_x'] + ',' + dictionary['bow_y'] + ',' + dictionary['bow_z'] + ',' +
+                     dictionary['left_shoulder_positions_x'] + ',' + dictionary['left_shoulder_positions_y'] + ',' +
+                     dictionary['right_shoulder_positions_x'] + ',' + dictionary['right_shoulder_positions_y'] + ',' +
+                     dictionary['left_elbow_positions_x'] + ',' + dictionary['left_elbow_positions_y'] + ',' +
+                     dictionary['right_elbow_positions_x'] + ',' + dictionary['right_elbow_positions_y'] + ',' +
+                     dictionary['left_wrist_positions_x'] + ',' + dictionary['left_wrist_positions_y'] + ',' +
+                     dictionary['right_wrist_positions_x'] + ',' + dictionary['right_wrist_positions_y'])
 
 
 async def write_data_on_file(path, dicts, struct, barycenter=False):
-
     first_free_index = await find_first_free_index(dicts, barycenter)
     if first_free_index == -1:
-        dicts.append(dict)
+        dicts.append(dict())
     first_free_index = len(dicts) - 1
 
     if not barycenter:
         bow_x, bow_y, bow_z, \
-        left_shoulder_positions_x, left_shoulder_positions_y, \
-        right_shoulder_positions_x, right_shoulder_positions_y, \
-        left_elbow_positions_x, left_elbow_positions_y, \
-        right_elbow_positions_x, right_elbow_positions_y, \
-        left_wrist_positions_x, left_wrist_positions_y, \
-        right_wrist_positions_x, right_wrist_positions_y = unpack('15f', struct)
+            left_shoulder_positions_x, left_shoulder_positions_y, \
+            right_shoulder_positions_x, right_shoulder_positions_y, \
+            left_elbow_positions_x, left_elbow_positions_y, \
+            right_elbow_positions_x, right_elbow_positions_y, \
+            left_wrist_positions_x, left_wrist_positions_y, \
+            right_wrist_positions_x, right_wrist_positions_y = unpack('15f', struct)
 
         dicts[first_free_index]['bow_x'] = bow_x
         dicts[first_free_index]['bow_y'] = bow_y
@@ -168,7 +162,8 @@ if __name__ == '__main__':
 
     reconfig = input('Do you want to use the previous configuration? (y/n) ')
     if reconfig == 'y' and not config['elbow_wrist_length'] == -1 and not config['shoulder_elbow_length'] == -1 \
-            and not config['shoulder_length'] == -1 and not config['bow_weight'] == -1 and not config['table_dim'] == -1:
+            and not config['shoulder_length'] == -1 and not config['bow_weight'] == -1 and not config[
+                                                                                                   'table_dim'] == -1:
         print('Using old configuration')
     else:
         print('Reconfiguration of the parameters in progress. In case you asked to use the previous configuration,\
@@ -221,20 +216,23 @@ if __name__ == '__main__':
                 point_wrist_right_y += point_elbow_right_y
                 point_wrist_left_x += point_elbow_left_y
 
-                ##################################################################
-                #                             TODO                               #
-                #                 pack data and dump on csv file                 #
-                ##################################################################
-                write_data_on_file(list_of_dicts, None, False)
+                struct = pack('15f', gyro_x, gyro_y, gyro_z,
+                              point_shoulder_left_x, point_shoulder_left_y,
+                              point_shoulder_right_x, point_shoulder_right_y,
+                              point_elbow_left_x, point_elbow_left_y,
+                              point_elbow_right_x, point_elbow_right_y,
+                              point_wrist_left_x, point_wrist_left_y,
+                              point_wrist_right_x, point_wrist_right_y)
+                write_data_on_file(list_of_dicts, struct, False)
 
             elif address[0] == '192.168.0.2':  # data from raspberry linked to the table
 
-                xbalance, ybalance = unpack('2i', message)
-                xbalance /= 1000
-                ybalance /= 1000
+                x_balance, y_balance = unpack('2i', message)
+                x_balance /= 1000
+                y_balance /= 1000
 
                 arm_length = config['shoulder_length'] + config['shoulder_elbow_length'] + config['elbow_wrist_length']
-                total_weigth = config['archer_weight'] + config['bow_weight']
+                total_weight = config['archer_weight'] + config['bow_weight']
 
                 # derived from the center of mass formula with two entities, one of which is the archer
                 # and the other is the bow. Considering no weight for the arm and rewriting the formula
@@ -242,22 +240,25 @@ if __name__ == '__main__':
                 # position plus the arm length)
                 # Even if it is a simplification, this is still a better result than having the center of mass of
                 # the complete system
-                xbalance = xbalance - (arm_length * config['bow_weight'] / total_weigth)
+                x_balance = x_balance - (arm_length * config['bow_weight'] / total_weight)
 
-                # xbalance *= 2
-                # if xbalance > 1:
-                #     xbalance = 1
-                # elif xbalance < -1:
-                #     xbalance = -1
+                # x_balance *= 2
+                # if x_balance > 1:
+                #     x_balance = 1
+                # elif x_balance < -1:
+                #     x_balance = -1
                 #
-                # ybalance *= 2
-                # if ybalance > 1:
-                #     ybalance = 1
-                # elif ybalance < -1:
-                #     ybalance = -1
+                # y_balance *= 2
+                # if y_balance > 1:
+                #     y_balance = 1
+                # elif y_balance < -1:
+                #     y_balance = -1
 
-                pd_client.send_message("/x", xbalance)
-                pd_client.send_message("/y", -ybalance)
+                pd_client.send_message("/x", x_balance)
+                pd_client.send_message("/y", -y_balance)
+
+                struct = pack('2f', x_balance, y_balance)
+                write_data_on_file(list_of_dicts, struct, True)
 
             else:
                 print('Unknown address, something went wrong. Exiting')
