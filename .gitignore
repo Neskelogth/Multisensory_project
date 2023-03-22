@@ -2,3 +2,4 @@
 venv/
 data.csv
 data_generator.py
+fw_backup

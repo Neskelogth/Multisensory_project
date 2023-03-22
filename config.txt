@@ -1,0 +1,7 @@
+bow_weight -1
+table_dim 600
+shoulder_length -1
+shoulder_elbow_length -1
+elbow_wrist_length -1
+archer_weight -1
+lefthanded 0
