@@ -75,13 +75,13 @@ void setup() {
   delay(5);
   init_sensor(1, bno_shoulderL);
   delay(5);
-  //init_sensor(2, bno_shoulderR);
+  init_sensor(2, bno_shoulderR);
   delay(5);
   init_sensor(3, bno_elbowR);
   delay(5);
   init_sensor(4, bno_shoulderR);
   delay(5);
-  delay(10000); // to make sure there are no problems while reading from raspberry
+  delay(4000); // to make sure there are no problems while reading from raspberry
 }
 
 void loop() {
@@ -140,7 +140,7 @@ void loop() {
       Serial.println(event4.orientation.z*1000);   
       break;
     }
-    delay(1);  // delay in between reads for stability
+    delay(100);  // delay in between reads for stability
    }
 
 }

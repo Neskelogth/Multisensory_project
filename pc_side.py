@@ -32,12 +32,11 @@ def take_params(params, configuration_file, save_params=False):
     if save_params:
         dump_params_to_file(params, configuration_file)
 
-    # print(params)
-
     return params
 
 
 def create_socket(server_host, server_port):
+
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.bind((server_host, server_port))
     return sock
@@ -48,8 +47,8 @@ def point_init(angle, length, right=False):
         angle = angle % 360
 
     # convert to radians
-    # (math.pi / 180) = 0.0174533
-    angle = angle * 0.0174533
+    # pi / 180 ~= 0.017453293
+    angle = angle * 0.017453293
 
     x = length * math.cos(angle)
     y = length * math.sin(angle)
@@ -60,12 +59,29 @@ def point_init(angle, length, right=False):
     return x, y
 
 
+def compute_force(voltage):
+
+    # Found based on observation of the force/voltage graph in the sensor's datasheet
+
+    # 0.017453293 is for the conversion from degrees to radians
+    # 454 is for the conversion from lb to kg
+
+    voltage = (voltage * 5 / 1023) * 100 / 5
+
+    if 0 <= voltage <= 27:
+        return ((voltage / math.sin(43 * 0.017453293) * math.cos(43 * 0.017453293)) * 16 / 29) * 0.454
+    elif 27 < voltage <= 62:
+        return ((((voltage - 27) / math.sin(24 * 0.017453293) * math.cos(24 * 0.017453293)) * 42 / 79) + 16) * 0.454
+
+    return ((((voltage - 62) / math.sin(8 * 0.017453293) * math.cos(8 * 0.017453293)) * 42 / 270) + 58) * 0.454
+
+
 def find_first_free_index(dictionaries, barycenter):
     index = -1
     for i in range(len(dictionaries)):
 
         item = dictionaries[i]
-        l = len(list(item.keys()))
+        l = len(item.keys())
         if l == 0:
             return i
         if barycenter and l == 15:
@@ -77,26 +93,29 @@ def find_first_free_index(dictionaries, barycenter):
 
 
 def complete(dictionary):
-    return len(list(dictionary.keys())) == 17
+    print(dictionary, len(dictionary.keys()))
+    return len(list(dictionary.keys())) == 15
 
 
-async def write_data(path, dictionary):
+def write_data(path, dictionary):
     with open(path, 'a') as target:
-        target.write(dictionary['barycenter_x'] + ',' + dictionary['barycenter_y'] + ',' +
-                     dictionary['bow_x'] + ',' + dictionary['bow_y'] + ',' + dictionary['bow_z'] + ',' +
-                     dictionary['left_shoulder_positions_x'] + ',' + dictionary['left_shoulder_positions_y'] + ',' +
-                     dictionary['right_shoulder_positions_x'] + ',' + dictionary['right_shoulder_positions_y'] + ',' +
-                     dictionary['left_elbow_positions_x'] + ',' + dictionary['left_elbow_positions_y'] + ',' +
-                     dictionary['right_elbow_positions_x'] + ',' + dictionary['right_elbow_positions_y'] + ',' +
-                     dictionary['left_wrist_positions_x'] + ',' + dictionary['left_wrist_positions_y'] + ',' +
-                     dictionary['right_wrist_positions_x'] + ',' + dictionary['right_wrist_positions_y'])
+        target.write(str(dictionary['barycenter_x']) + ',' + str(dictionary['barycenter_y']) + ',' +
+                     str(dictionary['bow_x']) + ',' + str(dictionary['bow_y']) + ',' + str(dictionary['bow_z']) + ',' +
+                     str(dictionary['left_shoulder_positions_x']) + ',' + str(dictionary['left_shoulder_positions_y']) + ',' +
+                     str(dictionary['right_shoulder_positions_x']) + ',' + str(dictionary['right_shoulder_positions_y']) + ',' +
+                     str(dictionary['left_elbow_positions_x']) + ',' + str(dictionary['left_elbow_positions_y']) + ',' +
+                     str(dictionary['right_elbow_positions_x']) + ',' + str(dictionary['right_elbow_positions_y']) + ',' +
+                     str(dictionary['left_wrist_positions_x']) + ',' + str(dictionary['left_wrist_positions_y']) + ',' +
+                     str(dictionary['right_wrist_positions_x']) + ',' + str(dictionary['right_wrist_positions_y']) + '\n')
 
 
-async def write_data_on_file(path, dicts, struct, barycenter=False):
-    first_free_index = await find_first_free_index(dicts, barycenter)
+def write_data_on_file(path, dicts, struct, barycenter=False):
+
+    first_free_index = find_first_free_index(dicts, barycenter)
+
     if first_free_index == -1:
         dicts.append(dict())
-    first_free_index = len(dicts) - 1
+        first_free_index = len(dicts) - 1
 
     if not barycenter:
         bow_x, bow_y, bow_z, \
@@ -128,20 +147,20 @@ async def write_data_on_file(path, dicts, struct, barycenter=False):
         dicts[first_free_index]['baricenter_y'] = barycenter_y
 
     if complete(dicts[first_free_index]):
+        print('Complete')
         write_data(path, dicts[first_free_index])
         dicts.pop(first_free_index)
         dicts.append(dict())
 
 
-if __name__ == '__main__':
-
+def main():
     # needed later
     list_of_dicts = list()
     for i in range(10):
-        list_of_dicts.append(dict)
+        list_of_dicts.append(dict())
 
-    data_path = 'data.csv'
-    open(data_path, 'w').close()
+    data_file = 'data.csv'
+    open(data_file, 'w').close()
     host = '0.0.0.0'
     ports = [30080, 65000]
     sockets = list()
@@ -150,7 +169,6 @@ if __name__ == '__main__':
     pd_port = 5005
     config_file = 'config.txt'
     config = dict()
-    data_file = 'current_data.csv'
 
     pd_client = udp_client.SimpleUDPClient(pd_host, pd_port)
     for port in ports:
@@ -182,7 +200,6 @@ if __name__ == '__main__':
 
         for s in readable:
             message, address = s.recvfrom(4096)
-            print(address)
 
             if address[0] == '192.168.0.9':  # data from raspberry linked to imu system
 
@@ -223,13 +240,23 @@ if __name__ == '__main__':
                               point_elbow_right_x, point_elbow_right_y,
                               point_wrist_left_x, point_wrist_left_y,
                               point_wrist_right_x, point_wrist_right_y)
-                write_data_on_file(list_of_dicts, struct, False)
+
+                write_data_on_file(data_file, list_of_dicts, struct, False)
 
             elif address[0] == '192.168.0.2':  # data from raspberry linked to the table
 
-                x_balance, y_balance = unpack('2i', message)
-                x_balance /= 1000
-                y_balance /= 1000
+                sensor_0, sensor_1, sensor_2, sensor_3 = unpack('4i', message)
+
+                sensor_0_force = compute_force(sensor_0)
+                sensor_1_force = compute_force(sensor_1)
+                sensor_2_force = compute_force(sensor_2)
+                sensor_3_force = compute_force(sensor_3)
+
+
+                x_balance = (sensor_1_force * 0.6 + sensor_2_force * 0.6 - (7.1 * 9.81 * 0.6 / 2)) / \
+                            (config['archer_weight'] / 1000 * 9.81)
+                y_balance = (sensor_0_force * 0.6 + sensor_1_force * 0.6 - (7.1 * 9.81 * 0.6 / 2)) / \
+                            (config['archer_weight'] / 1000 * 9.81)
 
                 arm_length = config['shoulder_length'] + config['shoulder_elbow_length'] + config['elbow_wrist_length']
                 total_weight = config['archer_weight'] + config['bow_weight']
@@ -241,6 +268,9 @@ if __name__ == '__main__':
                 # Even if it is a simplification, this is still a better result than having the center of mass of
                 # the complete system
                 x_balance = x_balance - (arm_length * config['bow_weight'] / total_weight)
+
+                x_balance = x_balance * 2 / 0.6 - 1
+                y_balance = y_balance * 2 / 0.6 - 1
 
                 # x_balance *= 2
                 # if x_balance > 1:
@@ -269,3 +299,7 @@ if __name__ == '__main__':
             break
 
     pd_client.send_message("/on", 0)
+
+
+if __name__ == '__main__':
+    main()

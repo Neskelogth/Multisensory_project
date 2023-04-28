@@ -7,25 +7,18 @@ Created on Sun Jan 15 20:00:35 2023
 """
 import numpy as np
 import signal
+import sys
 
 import serial
 import socket
 from struct import pack
 
 
-def stop_teensy():
+def stop_teensy(*kwargs):
 
-    print('Ctrl-c was pressed, stopping teensy', end='')
+    print('Ctrl-c was pressed, stopping teensy')
     ser2.write('0000')
     exit(0)
-
-
-def circular_diff(prev, new):
-    diff = new - prev
-    if diff > 180:
-        diff -= 360
-
-    return diff
 
 
 def actuator_control(angle_es, angle_we, angle_se, angle_ew, left):
@@ -45,50 +38,50 @@ def actuator_control(angle_es, angle_we, angle_se, angle_ew, left):
         # per calcolare il terzo angolo sottrai a 180 gli altri due angoli
         # l'angolo tra i due polsi sta tra 10 e 12 gradi
 
-        if abs(circular_diff(angle_we, 0)) > 2:  #
+        if 4 < angle_we < 356:  #
             one_hot[0] = 1
         else:
             one_hot[0] = 0
 
-        if abs(circular_diff(angle_es, 0)) > 2:  # abs(circular_diff(angle_we, 0)) > 4
+        if 4 < angle_es < 356:
             one_hot[1] = 1
         else:
             one_hot[1] = 0
 
         # for right arm
 
-        if abs(circular_diff(angle_se, 5)) > 2:
-            one_hot[2] = 1
-        else:
+        if 1 < angle_se < 9:
             one_hot[2] = 0
-
-        if abs(circular_diff(angle_ew, 173)) > 5:  # abs(circular_diff(angle_we, 173)) > 5
-            one_hot[3] = 1
         else:
+            one_hot[2] = 1
+
+        if 163 < angle_ew < 178:
             one_hot[3] = 0
+        else:
+            one_hot[3] = 1
 
     else:
-        if abs(circular_diff(angle_ew, 0)) > 2:  #
+        if 4 < angle_ew < 356:  #
             one_hot[3] = 1
         else:
             one_hot[3] = 0
 
-        if abs(circular_diff(angle_se, 0)) > 2:  # abs(circular_diff(angle_we, 0)) > 4
+        if 4 < angle_se < 356:  # abs(circular_diff(angle_we, 0)) > 4
             one_hot[2] = 1
         else:
             one_hot[2] = 0
 
         # for right arm
 
-        if abs(circular_diff(angle_es, 5)) > 2:
-            one_hot[1] = 1
-        else:
+        if 1 < angle_es < 9:
             one_hot[1] = 0
-
-        if abs(circular_diff(angle_we, 173)) > 5:  # abs(circular_diff(angle_we, 173)) > 5
-            one_hot[0] = 1
         else:
+            one_hot[1] = 1
+
+        if 163 < angle_we < 178:  # abs(circular_diff(angle_we, 173)) > 5
             one_hot[0] = 0
+        else:
+            one_hot[0] = 1
 
     string_to_return = ''
 
@@ -113,7 +106,8 @@ def init():
 
 if __name__ == "__main__":
 
-    left = input("Is the archer lefthanded?(y/n): ") == 'y'
+    print('Is the archer lefthanded? (y/n)')
+    left = sys.stdin.readline().replace('\n', '').lower() == 'y'
 
     # set socket for pc connection
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -133,7 +127,7 @@ if __name__ == "__main__":
 
     signal.signal(signal.SIGINT, stop_teensy)
 
-    threshold = 1
+    # threshold = 1
 
     print('Starting Serial connection...')
 
@@ -150,6 +144,10 @@ if __name__ == "__main__":
     while True:
         if ser.in_waiting > 0:
 
+            cumulative_diff_we = 0
+            cumulative_diff_ew = 0
+            cumulative_diff_se = 0
+            cumulative_diff_es = 0
             avg_angle_we = 0
             avg_angle_es = 0
             avg_angle_se = 0
@@ -169,47 +167,115 @@ if __name__ == "__main__":
 
                     # control from which imus is sent
                     if str(line[0]) == 'Imu:':
+
                         angle_we = int(float(line[3])) / 1000
                         angle_es = int(float(line[6])) / 1000
                         angle_se = int(float(line[9])) / 1000
                         angle_ew = int(float(line[12])) / 1000
 
-                        se_diff = circular_diff(prev_angle_se, angle_se)
-                        es_diff = circular_diff(prev_angle_es, angle_es)
-                        we_diff = circular_diff(prev_angle_we, angle_we)
-                        ew_diff = circular_diff(prev_angle_ew, angle_ew)
+                        if (counter == 0 and flag == 1) or (counter == 1 and flag == 1):
+                            flag = 0
+                            offset_we = angle_we
+                            offset_es = angle_es
+                            offset_se = angle_se
+                            offset_ew = angle_ew
+                            print("offset done")
 
-                        if abs(we_diff) > threshold:
+                        if angle_we < offset_we:
+                            angle_we += 360
 
-                            avg_angle_we += angle_we
-                            prev_angle_we = angle_we
-                        else:
+                        if angle_ew < offset_ew:
+                            angle_ew += 360
 
-                            avg_angle_we += prev_angle_we
+                        if angle_se < offset_se:
+                            angle_se += 360
 
-                        if abs(ew_diff) > threshold:
+                        if angle_es < offset_es:
+                            angle_es += 360
 
-                            avg_angle_ew += angle_ew
-                            prev_angle_ew = angle_ew
-                        else:
+                        angle_we -= offset_we
+                        angle_ew -= offset_ew
+                        angle_se -= offset_se
+                        angle_es -= offset_es
 
-                            avg_angle_we += prev_angle_we
+                        # if angle_we < 0:
+                        #     angle_we += 360
+                        #
+                        # if angle_se < 0:
+                        #     angle_se += 360
+                        #
+                        # if angle_ew < 0:
+                        #     angle_ew += 360
+                        #
+                        # if angle_es < 0:
+                        #     angle_es += 360
 
-                        if abs(es_diff) > threshold:
+                        avg_angle_ew += angle_ew
+                        avg_angle_se += angle_se
+                        avg_angle_es += angle_es
+                        avg_angle_we += angle_we
 
-                            avg_angle_es += angle_es
-                            prev_angle_es = angle_es
-                        else:
-
-                            avg_angle_es += prev_angle_es
-
-                        if abs(se_diff) > threshold:
-
-                            avg_angle_se += angle_se
-                            prev_angle_se = angle_se
-                        else:
-
-                            avg_angle_se += prev_angle_se
+                        # se_diff = prev_angle_se - angle_se
+                        # es_diff = prev_angle_es - angle_es
+                        # we_diff = prev_angle_we - angle_we
+                        # ew_diff = prev_angle_ew - angle_ew
+                        #
+                        # prev_angle_ew = angle_ew
+                        # prev_angle_se = angle_se
+                        # prev_angle_we = angle_we
+                        # prev_angle_es = angle_es
+                        #
+                        # # if se_diff > 180:
+                        # #     se_diff = -(se_diff - 360)
+                        # # elif se_diff < -180:
+                        # #     se_diff = -(se_diff + 360)
+                        # #
+                        # # if we_diff > 180:
+                        # #     we_diff = -(we_diff - 360)
+                        # # elif we_diff < -180:
+                        # #     we_diff = -(we_diff + 360)
+                        # #
+                        # # if es_diff > 180:
+                        # #     es_diff = -(es_diff - 360)
+                        # # elif es_diff < -180:
+                        # #     es_diff = -(es_diff + 360)
+                        # #
+                        # # if ew_diff > 180:
+                        # #     ew_diff = -(ew_diff - 360)
+                        # # elif ew_diff < -180:
+                        # #     ew_diff = -(ew_diff + 360)
+                        #
+                        # cumulative_diff_ew += ew_diff
+                        # cumulative_diff_we += we_diff
+                        # cumulative_diff_es += es_diff
+                        # cumulative_diff_se += se_diff
+                        #
+                        # # if abs(we_diff) > threshold:
+                        # #     avg_angle_we += angle_we
+                        # #     prev_angle_we = angle_we
+                        # # else:
+                        # #     avg_angle_we += prev_angle_we
+                        # #
+                        # # if abs(ew_diff) > threshold:
+                        # #     avg_angle_ew += angle_ew
+                        # #     prev_angle_ew = angle_ew
+                        # #
+                        # # else:
+                        # #     avg_angle_we += prev_angle_we
+                        # #
+                        # # if abs(es_diff) > threshold:
+                        # #     avg_angle_es += angle_es
+                        # #     prev_angle_es = angle_es
+                        # #
+                        # # else:
+                        # #     avg_angle_es += prev_angle_es
+                        # #
+                        # # if abs(se_diff) > threshold:
+                        # #     avg_angle_se += angle_se
+                        # #     prev_angle_se = angle_se
+                        # #
+                        # # else:
+                        # #     avg_angle_se += prev_angle_se
 
                     elif str(line[0]) == 'Bow:':
                         gyro_x = int(float(line[3]))
@@ -220,18 +286,11 @@ if __name__ == "__main__":
                         avg_gyro_y += (gyro_y / 1000)
                         avg_gyro_z += (gyro_z / 1000)
 
-                    if counter == 1 and flag == 1:
-                        offset_we = angle_we
-                        offset_es = angle_es
-                        offset_se = angle_se
-                        offset_ew = angle_ew
-                        print("offset done")
-
             # average
-            avg_angle_we = avg_angle_we / number_of_measures
-            avg_angle_es = avg_angle_es / number_of_measures
-            avg_angle_se = avg_angle_se / number_of_measures
-            avg_angle_ew = avg_angle_ew / number_of_measures
+            avg_angle_we += (cumulative_diff_we / number_of_measures)
+            avg_angle_es += (cumulative_diff_es / number_of_measures)
+            avg_angle_se += (cumulative_diff_se / number_of_measures)
+            avg_angle_ew += (cumulative_diff_ew / number_of_measures)
             avg_gyro_x /= number_of_measures
             avg_gyro_y /= number_of_measures
             avg_gyro_z /= number_of_measures
