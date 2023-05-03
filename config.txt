@@ -3,5 +3,5 @@ table_dim 600
 shoulder_length 9
 shoulder_elbow_length 9
 elbow_wrist_length 9
-archer_weight 45
+archer_weight 64
 lefthanded 0

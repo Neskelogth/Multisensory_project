@@ -61,19 +61,15 @@ def point_init(angle, length, right=False):
 
 def compute_force(voltage):
 
-    # Found based on observation of the force/voltage graph in the sensor's datasheet
+    # The following function is found using the polynomial interpolation of the points found
+    # in the graph of the sensor's datasheet
 
     # 0.017453293 is for the conversion from degrees to radians
-    # 454 is for the conversion from lb to kg
+    # 0.454 is for the conversion from lb to kg
 
     voltage = (voltage * 5 / 1023) * 100 / 5
 
-    if 0 <= voltage <= 27:
-        return ((voltage / math.sin(43 * 0.017453293) * math.cos(43 * 0.017453293)) * 16 / 29) * 0.454
-    elif 27 < voltage <= 62:
-        return ((((voltage - 27) / math.sin(24 * 0.017453293) * math.cos(24 * 0.017453293)) * 42 / 79) + 16) * 0.454
-
-    return ((((voltage - 62) / math.sin(8 * 0.017453293) * math.cos(8 * 0.017453293)) * 42 / 270) + 58) * 0.454
+    return (0.00001 * voltage ** 4 - 0.00045 * voltage ** 3 + 0.00744 * voltage ** 2 + 0.58477 * voltage) * 0.454
 
 
 def find_first_free_index(dictionaries, barycenter):
@@ -93,8 +89,7 @@ def find_first_free_index(dictionaries, barycenter):
 
 
 def complete(dictionary):
-    print(dictionary, len(dictionary.keys()))
-    return len(list(dictionary.keys())) == 15
+    return len(list(dictionary.keys())) == 17
 
 
 def write_data(path, dictionary):
@@ -190,11 +185,9 @@ def main():
         save = input('Do you want to save the new parameters? (y/n) ').lower()
         config = take_params(config, config_file, save == 'y')
 
-    threshold_time = float(input('How much time (in seconds) do you want to record? '))
     flag = 1
-    start = time.time()
 
-    while time.time() - start < threshold_time:
+    while True:
 
         readable, writable, exceptional = select.select(sockets, empty, empty)
 
@@ -247,18 +240,22 @@ def main():
 
                 sensor_0, sensor_1, sensor_2, sensor_3 = unpack('4i', message)
 
-                sensor_0_force = compute_force(sensor_0)
-                sensor_1_force = compute_force(sensor_1)
-                sensor_2_force = compute_force(sensor_2)
-                sensor_3_force = compute_force(sensor_3)
+                # Coefficients found experimentally using same object for all the tests (with known weight of 1.040kg)
+                sensor_0_force = compute_force(sensor_0) * 0.19
+                sensor_1_force = compute_force(sensor_1) * 0.4
+                sensor_2_force = compute_force(sensor_2) * 0.37
+                sensor_3_force = compute_force(sensor_3) * 0.4
 
+                # print(sensor_0_force, sensor_1_force, sensor_2_force, sensor_3_force)
 
-                x_balance = (sensor_1_force * 0.6 + sensor_2_force * 0.6 - (7.1 * 9.81 * 0.6 / 2)) / \
-                            (config['archer_weight'] / 1000 * 9.81)
-                y_balance = (sensor_0_force * 0.6 + sensor_1_force * 0.6 - (7.1 * 9.81 * 0.6 / 2)) / \
-                            (config['archer_weight'] / 1000 * 9.81)
+                x_balance = (sensor_1_force * 9.81 * 0.6 + sensor_2_force * 9.81 * 0.6 - (7.1 * 9.81 * 0.6 / 2)) / \
+                            (config['archer_weight'] * 9.81)
+                y_balance = (sensor_0_force * 9.81 * 0.6 + sensor_1_force * 9.81 * 0.6 - (7.1 * 9.81 * 0.6 / 2)) / \
+                            (config['archer_weight'] * 9.81)
 
-                arm_length = config['shoulder_length'] + config['shoulder_elbow_length'] + config['elbow_wrist_length']
+                print(x_balance, y_balance)
+
+                arm_length = config['shoulder_length'] / 2 + config['shoulder_elbow_length'] + config['elbow_wrist_length']
                 total_weight = config['archer_weight'] + config['bow_weight']
 
                 # derived from the center of mass formula with two entities, one of which is the archer
@@ -288,7 +285,7 @@ def main():
                 pd_client.send_message("/y", -y_balance)
 
                 struct = pack('2f', x_balance, y_balance)
-                write_data_on_file(list_of_dicts, struct, True)
+                write_data_on_file(data_file, list_of_dicts, struct, True)
 
             else:
                 print('Unknown address, something went wrong. Exiting')

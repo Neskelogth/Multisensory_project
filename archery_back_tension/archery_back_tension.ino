@@ -65,7 +65,7 @@ void init_sensor(uint8_t i, Adafruit_BNO055 bno){
 
 
 void setup() {
-  
+ 
   Serial.begin(BAUD_RATE);
   while(!Serial);
   Wire.begin();

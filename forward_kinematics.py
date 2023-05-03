@@ -136,7 +136,7 @@ if __name__ == "__main__":
     prev_angle_we = 0
     prev_angle_ew = 0
 
-    number_of_measures = 10
+    number_of_measures = 1
 
     ############################  loop  ##################################
     flag = 1
@@ -144,10 +144,6 @@ if __name__ == "__main__":
     while True:
         if ser.in_waiting > 0:
 
-            cumulative_diff_we = 0
-            cumulative_diff_ew = 0
-            cumulative_diff_se = 0
-            cumulative_diff_es = 0
             avg_angle_we = 0
             avg_angle_es = 0
             avg_angle_se = 0
@@ -287,10 +283,10 @@ if __name__ == "__main__":
                         avg_gyro_z += (gyro_z / 1000)
 
             # average
-            avg_angle_we += (cumulative_diff_we / number_of_measures)
-            avg_angle_es += (cumulative_diff_es / number_of_measures)
-            avg_angle_se += (cumulative_diff_se / number_of_measures)
-            avg_angle_ew += (cumulative_diff_ew / number_of_measures)
+            avg_angle_we = (avg_angle_we / number_of_measures)
+            avg_angle_es = (avg_angle_es / number_of_measures)
+            avg_angle_se = (avg_angle_se / number_of_measures)
+            avg_angle_ew = (avg_angle_ew / number_of_measures)
             avg_gyro_x /= number_of_measures
             avg_gyro_y /= number_of_measures
             avg_gyro_z /= number_of_measures
