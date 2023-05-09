@@ -88,6 +88,8 @@ void loop() {
   
   /*for each imu print in sequence datas*/
   //EULER is in degrees
+  
+  int imu0, imu1, imu2, imu3, bow_x, bow_y, bow_z;
 
   for (int bus = 0; bus < 6; bus++) {
 
@@ -104,43 +106,66 @@ void loop() {
     case 0:
       sensors_event_t event0;
       bno_elbowL.getEvent(&event0, Adafruit_BNO055::VECTOR_EULER);
-      Serial.print("Imu: elbowL = ");
-      Serial.print(event0.orientation.x*1000);
+      //Serial.print("Imu: elbowL = ");
+      //Serial.print(event0.orientation.x*1000);
+      imu0 = event0.orientation.x*1000;
       break;
       
     case 1:
       sensors_event_t event1;
       bno_shoulderL.getEvent(&event1, Adafruit_BNO055::VECTOR_EULER);
-      Serial.print(" shoulderL = ");
-      Serial.print(event1.orientation.x*1000);
+      //Serial.print(" shoulderL = ");
+      //Serial.print(event1.orientation.x*1000);
+      imu1 = event1.orientation.x*1000;
       break;
       
     case 2:
       sensors_event_t event2;
       bno_shoulderR.getEvent(&event2,  Adafruit_BNO055::VECTOR_EULER);  
-      Serial.print(" shoulderR = ");
-      Serial.print(event2.orientation.x*1000);
+      //Serial.print(" shoulderR = ");
+      //Serial.print(event2.orientation.x*1000);
+      imu2 = event2.orientation.x*1000;
       break;
       
     case 3:
       sensors_event_t event3;
       bno_elbowR.getEvent(&event3,  Adafruit_BNO055::VECTOR_EULER);
-      Serial.print(" elbowR = ");
-      Serial.println(event3.orientation.x*1000);
+      //Serial.print(" elbowR = ");
+      //Serial.println(event3.orientation.x*1000);
+      imu3 = event3.orientation.x*1000;
       break;
 
     case 4:       
       sensors_event_t event4;
       bno_bow.getEvent(&event4,  Adafruit_BNO055::VECTOR_EULER);
-      Serial.print("Bow: x = ");
-      Serial.print(event4.orientation.x*1000);
-      Serial.print(" y = ");
-      Serial.print(event4.orientation.y*1000);
-      Serial.print(" z = ");
-      Serial.println(event4.orientation.z*1000);   
+      //Serial.print("Bow: x = ");
+      //Serial.print(event4.orientation.x*1000);
+      //Serial.print(" y = ");
+      //Serial.print(event4.orientation.y*1000);
+      //Serial.print(" z = ");
+      //Serial.println(event4.orientation.z*1000);
+      bow_x = event4.orientation.x*1000;
+      bow_y = event4.orientation.y*1000;
+      bow_z = event4.orientation.z*1000;
       break;
     }
-    delay(100);  // delay in between reads for stability
+    //delay(100);  // delay in between reads for stability
    }
+  
+  Serial.print("Imu: elbowL = ");
+  Serial.print(imu0);
+  Serial.print(" shoulderL = ");
+  Serial.print(imu1);
+  Serial.print(" shoulderR = ");
+  Serial.print(imu2);
+  Serial.print(" elbowR = ");
+  Serial.println(imu3);
+  
+  Serial.print("Bow: x = ");
+  Serial.print(bow_x);
+  Serial.print(" y = ");
+  Serial.print(bow_y);
+  Serial.print(" z = ");
+  Serial.println(bow_z);
 
 }
