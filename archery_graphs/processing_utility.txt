@@ -1,0 +1,8 @@
+Processing Utility
+
+-to run the programm from terminal 
+cd go to the folder where u save it
+use the command ./processing
+
+
+-export the program as an application for pc

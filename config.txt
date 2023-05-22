@@ -1,7 +1,7 @@
-bow_weight 1000
+bow_weight 0
 table_dim 600
-shoulder_length 9
-shoulder_elbow_length 9
-elbow_wrist_length 9
+shoulder_length 37
+shoulder_elbow_length 32
+elbow_wrist_length 27
 archer_weight 64
 lefthanded 0
