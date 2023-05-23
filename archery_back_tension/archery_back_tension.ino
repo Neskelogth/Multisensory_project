@@ -72,18 +72,18 @@ void setup() {
   /* Setup of the digital sensors */
   /*create a function to call for each sensor*/
   init_sensor(0, bno_elbowL);
-  Serial.print("0 done ");
+  //Serial.print("0 done ");
   delay(5);
   init_sensor(1, bno_shoulderL);
-  Serial.print(" 1 done ");
+  //Serial.print(" 1 done ");
   delay(5);
   init_sensor(2, bno_shoulderR);
-  Serial.print(" 2 done ");
+  //Serial.print(" 2 done ");
   delay(5);
   init_sensor(3, bno_elbowR);
-  Serial.print(" 3 done ");
+  //Serial.print(" 3 done ");
   delay(5);
-  //init_sensor(4, bno_bow);
+  init_sensor(4, bno_bow);
   //Serial.print(" 4 done ");
   delay(5);
   delay(4000); // to make sure there are no problems while reading from raspberry
@@ -140,7 +140,7 @@ void loop() {
       imu3 = event3.orientation.x*1000;
       break;
 
-    /*case 4:       
+    case 4:       
       sensors_event_t event4;
       bno_bow.getEvent(&event4,  Adafruit_BNO055::VECTOR_EULER);
       //Serial.print("Bow: x = ");
@@ -153,7 +153,7 @@ void loop() {
       bow_y = event4.orientation.y*1000;
       bow_z = event4.orientation.z*1000;
       break;
-    */
+    
     }
     //delay(100);  // delay in between reads for stability
    }
