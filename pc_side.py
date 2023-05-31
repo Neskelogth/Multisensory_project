@@ -191,7 +191,7 @@ def main():
 
 
     name = 'data_' + config['name'] + time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime())[:10]
-    data_file = 'archery_graphs/data/' + name + '.csv'
+    data_file = 'archery_graphs/data/data.csv'
     history_path = name + '.csv'
     open(history_path, 'w').close()
     open(data_file, 'w').close()
@@ -260,10 +260,10 @@ def main():
                 sensor_2_force = compute_force(sensor_2) * 0.37
                 sensor_3_force = compute_force(sensor_3) * 0.4
 
-                x_balance = (sensor_1_force * 9.81 * 0.6 + sensor_2_force * 9.81 * 0.6 - (7.1 * 9.81 * 0.6 / 2)) / \
-                            (config['archer_weight'] * 9.81)
-                y_balance = (sensor_0_force * 9.81 * 0.6 + sensor_1_force * 9.81 * 0.6 - (7.1 * 9.81 * 0.6 / 2)) / \
-                            (config['archer_weight'] * 9.81)
+                x_balance = (sensor_1_force * 9.81 * config['table_dim'] + sensor_2_force * 9.81 * config['table_dim']
+                             - (7.1 * 9.81 * config['table_dim'] / 2)) / (config['archer_weight'] * 9.81)
+                y_balance = (sensor_0_force * 9.81 * config['table_dim'] + sensor_1_force * 9.81 * config['table_dim']
+                             - (7.1 * 9.81 * config['table_dim'] / 2)) / (config['archer_weight'] * 9.81)
 
                 arm_length = config['shoulder_length'] / 2 + config['shoulder_elbow_length'] + config['elbow_wrist_length']
                 total_weight = config['archer_weight'] + config['bow_weight']

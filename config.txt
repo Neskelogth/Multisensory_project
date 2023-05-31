@@ -1,5 +1,5 @@
 bow_weight 0
-table_dim 600
+table_dim 0.6
 shoulder_length 37
 shoulder_elbow_length 32
 elbow_wrist_length 27
