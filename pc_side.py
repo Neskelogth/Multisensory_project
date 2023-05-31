@@ -63,8 +63,7 @@ def compute_force(voltage):
 
     # The following function is found using the polynomial interpolation of the points found
     # in the graph of the sensor's datasheet
-
-    # 0.017453293 is for the conversion from degrees to radians
+    
     # 0.454 is for the conversion from lb to kg
 
     voltage = (voltage * 5 / 1023) * 100 / 5
@@ -155,10 +154,6 @@ def write_data_on_file(path, history_path, dicts, struct, barycenter=False):
 
 def main():
 
-    data_file = 'archery_graphs/data/data.csv'
-    history_path = 'data.csv'
-    open(history_path, 'w').close()
-    open(data_file, 'w').close()
     host = '0.0.0.0'
     ports = [30080, 65000]
     sockets = list()
@@ -175,8 +170,10 @@ def main():
 
     with open(config_file, 'r') as source:
         for line in source:
-            if 'lefthanded' not in line:
+            if 'lefthanded' not in line and 'name' not in line:
                 config[line.split(' ')[0]] = float(line.split(' ')[1].replace('\n', ''))
+            elif 'name' in line:
+                config[line.split(' ')[0]] = line.split(' ')[1].replace('\n', '')
             else:
                 config[line.split(' ')[0]] = bool(line.split(' ')[1].replace('\n', ''))
 
@@ -192,10 +189,18 @@ def main():
         save = input('Do you want to save the new parameters? (y/n) ').lower()
         config = take_params(config, config_file, save == 'y')
 
+
+    name = 'data_' + config['name'] + time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime())[:10]
+    data_file = 'archery_graphs/data/' + name + '.csv'
+    history_path = name + '.csv'
+    open(history_path, 'w').close()
+    open(data_file, 'w').close()
     # seconds = int(input("How many seconds do you want to record? Insert an integer number please"))
 
+    feedback = input('Do you want to give feedback to the user? (y/n)').lower() == 'y'
+
     start = time.time()
-    while True:  # time.time() - start > seconds:
+    while time.time() - start > seconds:
 
         readable, writable, exceptional = select.select(sockets, empty, empty)
 
@@ -271,14 +276,19 @@ def main():
                 # the complete system
                 x_balance = x_balance - (arm_length / 100 * config['bow_weight'] / total_weight)
 
-                x_balance = x_balance * 2 / 0.6 - 1
-                y_balance = y_balance * 2 / 0.6 - 1
-
-                pd_client.send_message("/x", x_balance)
-                pd_client.send_message("/y", y_balance)
                 struct = pack('2f', x_balance, y_balance)
                 write_data_on_file(data_file, history_path, value_dict, struct, True)
 
+                if feedback:
+
+                    x_balance = x_balance * 2 / 0.6 - 1
+                    y_balance = y_balance * 2 / 0.6 - 1
+
+                    pd_client.send_message("/x", x_balance)
+                    pd_client.send_message("/y", y_balance)
+
+            elif address == '':
+                print('Mocap')
             else:
                 print('Unknown address, something went wrong. Exiting')
                 break

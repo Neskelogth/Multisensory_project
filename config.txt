@@ -5,3 +5,4 @@ shoulder_elbow_length 32
 elbow_wrist_length 27
 archer_weight 64
 lefthanded 0
+name Elena
