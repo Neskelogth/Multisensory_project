@@ -1,0 +1,27 @@
+***** Program 1 *****
+python.exe .\PythonSample_modified.py 127.0.0.1 127.0.0.1 unicast
+
+-To conftol program, use "control_NNC.py" or type command + Enter
+--Send z / z and Enter to start recording
+--Send x / x and Enter to stop recording
+--Send q / q and Enter to terminate the software
+
+now receiving IP is 127.0.0.1, port is 8765
+
+
+***** Program 2 *****
+python.exe .\Mocap2Control.py
+
+;Ip as data-destination is written in py
+;To terminate program, press ctrl + c
+
+***** Program 3 - some PC *****
+;receive marker ID and predict something, with using UDP communication
+
+
+
+
+
+DataFlow
+
+OptiTrack Motive -> PythonSample_Aneek_mod -> Mocap2Control_ito_v3 -> (send something to your PC.)
