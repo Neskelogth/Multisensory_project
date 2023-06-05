@@ -93,15 +93,16 @@ def complete(dictionary):
 
 
 def write_data(path, history_path, dictionary):
-    with open(path, 'w') as target:
-        target.write(str(dictionary['barycenter_x']) + ',' + str(dictionary['barycenter_y']) + ',' +
-                     str(dictionary['bow_x']) + ',' + str(dictionary['bow_y']) + ',' + str(dictionary['bow_z']) + ',' +
-                     str(dictionary['left_shoulder_positions_x']) + ',' + str(dictionary['left_shoulder_positions_y']) + ',' +
-                     str(dictionary['right_shoulder_positions_x']) + ',' + str(dictionary['right_shoulder_positions_y']) + ',' +
-                     str(dictionary['left_elbow_positions_x']) + ',' + str(dictionary['left_elbow_positions_y']) + ',' +
-                     str(dictionary['right_elbow_positions_x']) + ',' + str(dictionary['right_elbow_positions_y']) + ',' +
-                     str(dictionary['left_wrist_positions_x']) + ',' + str(dictionary['left_wrist_positions_y']) + ',' +
-                     str(dictionary['right_wrist_positions_x']) + ',' + str(dictionary['right_wrist_positions_y']) + '\n')
+    if path is not None:  # mocap only record history
+        with open(path, 'w') as target:
+            target.write(str(dictionary['barycenter_x']) + ',' + str(dictionary['barycenter_y']) + ',' +
+                         str(dictionary['bow_x']) + ',' + str(dictionary['bow_y']) + ',' + str(dictionary['bow_z']) + ',' +
+                         str(dictionary['left_shoulder_positions_x']) + ',' + str(dictionary['left_shoulder_positions_y']) + ',' +
+                         str(dictionary['right_shoulder_positions_x']) + ',' + str(dictionary['right_shoulder_positions_y']) + ',' +
+                         str(dictionary['left_elbow_positions_x']) + ',' + str(dictionary['left_elbow_positions_y']) + ',' +
+                         str(dictionary['right_elbow_positions_x']) + ',' + str(dictionary['right_elbow_positions_y']) + ',' +
+                         str(dictionary['left_wrist_positions_x']) + ',' + str(dictionary['left_wrist_positions_y']) + ',' +
+                         str(dictionary['right_wrist_positions_x']) + ',' + str(dictionary['right_wrist_positions_y']) + '\n')
 
     with open(history_path, 'a') as target:
         target.write(str(dictionary['barycenter_x']) + ',' + str(dictionary['barycenter_y']) + ',' +
@@ -116,40 +117,84 @@ def write_data(path, history_path, dictionary):
 
 def write_data_on_file(path, history_path, dicts, struct, barycenter=False):
 
-    if not barycenter:
-        bow_x, bow_y, bow_z, \
-            left_shoulder_positions_x, left_shoulder_positions_y, \
-            right_shoulder_positions_x, right_shoulder_positions_y, \
-            left_elbow_positions_x, left_elbow_positions_y, \
-            right_elbow_positions_x, right_elbow_positions_y, \
-            left_wrist_positions_x, left_wrist_positions_y, \
-            right_wrist_positions_x, right_wrist_positions_y = unpack('15f', struct)
+    if path is not None:
+        if not barycenter:
+            bow_x, bow_y, bow_z, \
+                left_shoulder_positions_x, left_shoulder_positions_y, \
+                right_shoulder_positions_x, right_shoulder_positions_y, \
+                left_elbow_positions_x, left_elbow_positions_y, \
+                right_elbow_positions_x, right_elbow_positions_y, \
+                left_wrist_positions_x, left_wrist_positions_y, \
+                right_wrist_positions_x, right_wrist_positions_y = unpack('15f', struct)
 
-        dicts['bow_x'] = bow_x
-        dicts['bow_y'] = bow_y
-        dicts['bow_z'] = bow_z
-        dicts['left_shoulder_positions_x'] = left_shoulder_positions_x
-        dicts['left_shoulder_positions_y'] = left_shoulder_positions_y
-        dicts['right_shoulder_positions_x'] = right_shoulder_positions_x
-        dicts['right_shoulder_positions_y'] = right_shoulder_positions_y
-        dicts['left_elbow_positions_x'] = left_elbow_positions_x
-        dicts['left_elbow_positions_y'] = left_elbow_positions_y
-        dicts['right_elbow_positions_x'] = right_elbow_positions_x
-        dicts['right_elbow_positions_y'] = right_elbow_positions_y
-        dicts['left_wrist_positions_x'] = left_wrist_positions_x
-        dicts['left_wrist_positions_y'] = left_wrist_positions_y
-        dicts['right_wrist_positions_x'] = right_wrist_positions_x
-        dicts['right_wrist_positions_y'] = right_wrist_positions_y
-    else:
-        barycenter_x, barycenter_y = unpack('2f', struct)
-        dicts['barycenter_x'] = barycenter_x
-        dicts['barycenter_y'] = barycenter_y
+            dicts['bow_x'] = bow_x
+            dicts['bow_y'] = bow_y
+            dicts['bow_z'] = bow_z
+            dicts['left_shoulder_positions_x'] = left_shoulder_positions_x
+            dicts['left_shoulder_positions_y'] = left_shoulder_positions_y
+            dicts['right_shoulder_positions_x'] = right_shoulder_positions_x
+            dicts['right_shoulder_positions_y'] = right_shoulder_positions_y
+            dicts['left_elbow_positions_x'] = left_elbow_positions_x
+            dicts['left_elbow_positions_y'] = left_elbow_positions_y
+            dicts['right_elbow_positions_x'] = right_elbow_positions_x
+            dicts['right_elbow_positions_y'] = right_elbow_positions_y
+            dicts['left_wrist_positions_x'] = left_wrist_positions_x
+            dicts['left_wrist_positions_y'] = left_wrist_positions_y
+            dicts['right_wrist_positions_x'] = right_wrist_positions_x
+            dicts['right_wrist_positions_y'] = right_wrist_positions_y
+        else:
+            barycenter_x, barycenter_y = unpack('2f', struct)
+            dicts['barycenter_x'] = barycenter_x
+            dicts['barycenter_y'] = barycenter_y
 
-    if complete(dicts):
+    if complete(dicts) or path is None:
         write_data(path, history_path, dicts)
         return dict()
 
     return dicts
+
+
+def compute_arms_points(config, message, value_dict, data_file, history_path):
+    avg_angle_we, avg_angle_es, avg_angle_se, avg_angle_ew, avg_gyro_x, avg_gyro_z = unpack('6i', message)
+
+    point_shoulder_right_x = config['shoulder_length'] / 2
+    point_shoulder_right_y = 0
+
+    point_shoulder_left_x = - config['shoulder_length'] / 2
+    point_shoulder_left_y = 0
+
+    angle_es = avg_angle_es
+    angle_we = angle_es + avg_angle_we
+    angle_se = avg_angle_se
+    angle_ew = avg_angle_ew + angle_se
+
+    point_elbow_right_x, point_elbow_right_y = point_init(angle_se, config['shoulder_elbow_length'], True)
+    point_elbow_left_x, point_elbow_left_y = point_init(180 - angle_es, config['shoulder_elbow_length'])
+
+    point_wrist_right_x, point_wrist_right_y = point_init(angle_ew, config['elbow_wrist_length'], True)
+    point_wrist_left_x, point_wrist_left_y = point_init(180 - angle_we, config['elbow_wrist_length'])
+
+    gyro_x, gyro_z = point_init(avg_gyro_x, 1)
+    _, gyro_y = point_init(avg_gyro_z, 1)
+
+    point_elbow_right_x += config['shoulder_length'] / 2
+    point_elbow_left_x -= config['shoulder_length'] / 2
+
+    point_wrist_right_x += point_elbow_right_x
+    point_wrist_left_x += point_elbow_left_x
+    point_wrist_right_y += point_elbow_right_y
+    point_wrist_left_x += point_elbow_left_y
+
+    struct = pack('15f', gyro_x, gyro_y, gyro_z,
+                  point_shoulder_left_x, point_shoulder_left_y,
+                  point_shoulder_right_x, point_shoulder_right_y,
+                  point_elbow_left_x, point_elbow_left_y,
+                  point_elbow_right_x, point_elbow_right_y,
+                  point_wrist_left_x, point_wrist_left_y,
+                  point_wrist_right_x, point_wrist_right_y)
+
+    value_dict = write_data_on_file(data_file, history_path, value_dict, struct, False)
+    return value_dict
 
 
 def main():
@@ -200,7 +245,7 @@ def main():
     feedback = input('Do you want to give feedback to the user? (y/n)').lower() == 'y'
 
     start = time.time()
-    while time.time() - start > seconds:
+    while time.time() - start < seconds:
 
         readable, writable, exceptional = select.select(sockets, empty, empty)
 
@@ -210,45 +255,7 @@ def main():
 
             if address[0] == '192.168.0.9':  # data from raspberry linked to imu system
 
-                avg_angle_we, avg_angle_es, avg_angle_se, avg_angle_ew, avg_gyro_x, avg_gyro_z = unpack('6i', message)
-
-                point_shoulder_right_x = config['shoulder_length'] / 2
-                point_shoulder_right_y = 0
-
-                point_shoulder_left_x = - config['shoulder_length'] / 2
-                point_shoulder_left_y = 0
-
-                angle_es = avg_angle_es
-                angle_we = angle_es + avg_angle_we
-                angle_se = avg_angle_se
-                angle_ew = avg_angle_ew + angle_se
-
-                point_elbow_right_x, point_elbow_right_y = point_init(angle_se, config['shoulder_elbow_length'], True)
-                point_elbow_left_x, point_elbow_left_y = point_init(180 - angle_es, config['shoulder_elbow_length'])
-
-                point_wrist_right_x, point_wrist_right_y = point_init(angle_ew, config['elbow_wrist_length'], True)
-                point_wrist_left_x, point_wrist_left_y = point_init(180 - angle_we, config['elbow_wrist_length'])
-
-                gyro_x, gyro_z = point_init(avg_gyro_x, 1)
-                _, gyro_y = point_init(avg_gyro_z, 1)
-
-                point_elbow_right_x += config['shoulder_length'] / 2
-                point_elbow_left_x -= config['shoulder_length'] / 2
-
-                point_wrist_right_x += point_elbow_right_x
-                point_wrist_left_x += point_elbow_left_x
-                point_wrist_right_y += point_elbow_right_y
-                point_wrist_left_x += point_elbow_left_y
-
-                struct = pack('15f', gyro_x, gyro_y, gyro_z,
-                              point_shoulder_left_x, point_shoulder_left_y,
-                              point_shoulder_right_x, point_shoulder_right_y,
-                              point_elbow_left_x, point_elbow_left_y,
-                              point_elbow_right_x, point_elbow_right_y,
-                              point_wrist_left_x, point_wrist_left_y,
-                              point_wrist_right_x, point_wrist_right_y)
-
-                value_dict = write_data_on_file(data_file, history_path, value_dict, struct, False)
+                compute_arms_points(config, message, value_dict, data_file, history_path)
 
             elif address[0] == '192.168.0.2':  # data from raspberry linked to the table
 
@@ -289,6 +296,7 @@ def main():
 
             elif address == '':
                 print('Mocap')
+                compute_arms_points(config, message, value_dict, None, mocap_history_path)
             else:
                 print('Unknown address, something went wrong. Exiting')
                 break
