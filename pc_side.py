@@ -4,8 +4,8 @@ import select
 import math
 import time
 
-import keyboard
-from pythonosc import udp_client
+# import keyboard
+# from pythonosc import udp_client
 
 
 def dump_params_to_file(params, file):
@@ -35,11 +35,12 @@ def take_params(params, configuration_file, save_params=False):
     return params
 
 
-def create_socket(server_host, server_port):
+def create_socket(server_host, server_port, d):
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.bind((server_host, server_port))
-    return sock
+    d[sock] = server_port
+    return sock, d
 
 
 def point_init(angle, length, right=False):
@@ -104,48 +105,55 @@ def write_data(path, history_path, dictionary):
                          str(dictionary['left_wrist_positions_x']) + ',' + str(dictionary['left_wrist_positions_y']) + ',' +
                          str(dictionary['right_wrist_positions_x']) + ',' + str(dictionary['right_wrist_positions_y']) + '\n')
 
-    with open(history_path, 'a') as target:
-        target.write(str(dictionary['barycenter_x']) + ',' + str(dictionary['barycenter_y']) + ',' +
-                     str(dictionary['bow_x']) + ',' + str(dictionary['bow_y']) + ',' + str(dictionary['bow_z']) + ',' +
-                     str(dictionary['left_shoulder_positions_x']) + ',' + str(dictionary['left_shoulder_positions_y']) + ',' +
-                     str(dictionary['right_shoulder_positions_x']) + ',' + str(dictionary['right_shoulder_positions_y']) + ',' +
-                     str(dictionary['left_elbow_positions_x']) + ',' + str(dictionary['left_elbow_positions_y']) + ',' +
-                     str(dictionary['right_elbow_positions_x']) + ',' + str(dictionary['right_elbow_positions_y']) + ',' +
-                     str(dictionary['left_wrist_positions_x']) + ',' + str(dictionary['left_wrist_positions_y']) + ',' +
-                     str(dictionary['right_wrist_positions_x']) + ',' + str(dictionary['right_wrist_positions_y']) + '\n')
+        with open(history_path, 'a') as target:
+            target.write(str(dictionary['barycenter_x']) + ',' + str(dictionary['barycenter_y']) + ',' +
+                         str(dictionary['bow_x']) + ',' + str(dictionary['bow_y']) + ',' + str(dictionary['bow_z']) + ',' +
+                         str(dictionary['left_shoulder_positions_x']) + ',' + str(dictionary['left_shoulder_positions_y']) + ',' +
+                         str(dictionary['right_shoulder_positions_x']) + ',' + str(dictionary['right_shoulder_positions_y']) + ',' +
+                         str(dictionary['left_elbow_positions_x']) + ',' + str(dictionary['left_elbow_positions_y']) + ',' +
+                         str(dictionary['right_elbow_positions_x']) + ',' + str(dictionary['right_elbow_positions_y']) + ',' +
+                         str(dictionary['left_wrist_positions_x']) + ',' + str(dictionary['left_wrist_positions_y']) + ',' +
+                         str(dictionary['right_wrist_positions_x']) + ',' + str(dictionary['right_wrist_positions_y']) + '\n')
+    else:
+        with open(history_path, 'a') as target:
+            target.write(str(dictionary['left_shoulder_positions_x']) + ',' + str(dictionary['left_shoulder_positions_y']) + ',' +
+                         str(dictionary['right_shoulder_positions_x']) + ',' + str(dictionary['right_shoulder_positions_y']) + ',' +
+                         str(dictionary['left_elbow_positions_x']) + ',' + str(dictionary['left_elbow_positions_y']) + ',' +
+                         str(dictionary['right_elbow_positions_x']) + ',' + str(dictionary['right_elbow_positions_y']) + ',' +
+                         str(dictionary['left_wrist_positions_x']) + ',' + str(dictionary['left_wrist_positions_y']) + ',' +
+                         str(dictionary['right_wrist_positions_x']) + ',' + str(dictionary['right_wrist_positions_y']) + '\n')
 
 
 def write_data_on_file(path, history_path, dicts, struct, barycenter=False):
 
-    if path is not None:
-        if not barycenter:
-            bow_x, bow_y, bow_z, \
-                left_shoulder_positions_x, left_shoulder_positions_y, \
-                right_shoulder_positions_x, right_shoulder_positions_y, \
-                left_elbow_positions_x, left_elbow_positions_y, \
-                right_elbow_positions_x, right_elbow_positions_y, \
-                left_wrist_positions_x, left_wrist_positions_y, \
-                right_wrist_positions_x, right_wrist_positions_y = unpack('15f', struct)
+    if not barycenter:
+        bow_x, bow_y, bow_z, \
+            left_shoulder_positions_x, left_shoulder_positions_y, \
+            right_shoulder_positions_x, right_shoulder_positions_y, \
+            left_elbow_positions_x, left_elbow_positions_y, \
+            right_elbow_positions_x, right_elbow_positions_y, \
+            left_wrist_positions_x, left_wrist_positions_y, \
+            right_wrist_positions_x, right_wrist_positions_y = unpack('15f', struct)
 
-            dicts['bow_x'] = bow_x
-            dicts['bow_y'] = bow_y
-            dicts['bow_z'] = bow_z
-            dicts['left_shoulder_positions_x'] = left_shoulder_positions_x
-            dicts['left_shoulder_positions_y'] = left_shoulder_positions_y
-            dicts['right_shoulder_positions_x'] = right_shoulder_positions_x
-            dicts['right_shoulder_positions_y'] = right_shoulder_positions_y
-            dicts['left_elbow_positions_x'] = left_elbow_positions_x
-            dicts['left_elbow_positions_y'] = left_elbow_positions_y
-            dicts['right_elbow_positions_x'] = right_elbow_positions_x
-            dicts['right_elbow_positions_y'] = right_elbow_positions_y
-            dicts['left_wrist_positions_x'] = left_wrist_positions_x
-            dicts['left_wrist_positions_y'] = left_wrist_positions_y
-            dicts['right_wrist_positions_x'] = right_wrist_positions_x
-            dicts['right_wrist_positions_y'] = right_wrist_positions_y
-        else:
-            barycenter_x, barycenter_y = unpack('2f', struct)
-            dicts['barycenter_x'] = barycenter_x
-            dicts['barycenter_y'] = barycenter_y
+        dicts['bow_x'] = bow_x
+        dicts['bow_y'] = bow_y
+        dicts['bow_z'] = bow_z
+        dicts['left_shoulder_positions_x'] = left_shoulder_positions_x
+        dicts['left_shoulder_positions_y'] = left_shoulder_positions_y
+        dicts['right_shoulder_positions_x'] = right_shoulder_positions_x
+        dicts['right_shoulder_positions_y'] = right_shoulder_positions_y
+        dicts['left_elbow_positions_x'] = left_elbow_positions_x
+        dicts['left_elbow_positions_y'] = left_elbow_positions_y
+        dicts['right_elbow_positions_x'] = right_elbow_positions_x
+        dicts['right_elbow_positions_y'] = right_elbow_positions_y
+        dicts['left_wrist_positions_x'] = left_wrist_positions_x
+        dicts['left_wrist_positions_y'] = left_wrist_positions_y
+        dicts['right_wrist_positions_x'] = right_wrist_positions_x
+        dicts['right_wrist_positions_y'] = right_wrist_positions_y
+    else:
+        barycenter_x, barycenter_y = unpack('2f', struct)
+        dicts['barycenter_x'] = barycenter_x
+        dicts['barycenter_y'] = barycenter_y
 
     if complete(dicts) or path is None:
         write_data(path, history_path, dicts)
@@ -155,7 +163,10 @@ def write_data_on_file(path, history_path, dicts, struct, barycenter=False):
 
 
 def compute_arms_points(config, message, value_dict, data_file, history_path):
-    avg_angle_we, avg_angle_es, avg_angle_se, avg_angle_ew, avg_gyro_x, avg_gyro_z = unpack('6i', message)
+    if data_file is not None:
+        avg_angle_we, avg_angle_es, avg_angle_se, avg_angle_ew, avg_gyro_x, avg_gyro_z = unpack('6i', message)
+    else:
+        avg_angle_we, avg_angle_es, avg_angle_se, avg_angle_ew = unpack('6i', message)
 
     point_shoulder_right_x = config['shoulder_length'] / 2
     point_shoulder_right_y = 0
@@ -174,8 +185,11 @@ def compute_arms_points(config, message, value_dict, data_file, history_path):
     point_wrist_right_x, point_wrist_right_y = point_init(angle_ew, config['elbow_wrist_length'], True)
     point_wrist_left_x, point_wrist_left_y = point_init(180 - angle_we, config['elbow_wrist_length'])
 
-    gyro_x, gyro_z = point_init(avg_gyro_x, 1)
-    _, gyro_y = point_init(avg_gyro_z, 1)
+    gyro_x, gyro_y, gyro_z = 0, 0, 0
+
+    if data_file is not None:
+        gyro_x, gyro_z = point_init(avg_gyro_x, 1)
+        _, gyro_y = point_init(avg_gyro_z, 1)
 
     point_elbow_right_x += config['shoulder_length'] / 2
     point_elbow_left_x -= config['shoulder_length'] / 2
@@ -208,10 +222,12 @@ def main():
     config_file = 'config.txt'
     config = dict()
     value_dict = dict()
+    sock_dict = dict()
 
-    pd_client = udp_client.SimpleUDPClient(pd_host, pd_port)
+    # pd_client = udp_client.SimpleUDPClient(pd_host, pd_port)
     for port in ports:
-        sockets.append(create_socket(host, port))
+        socket, sock_dict = create_socket(host, port, sock_dict)
+        sockets.append(socket)
 
     with open(config_file, 'r') as source:
         for line in source:
@@ -234,15 +250,45 @@ def main():
         save = input('Do you want to save the new parameters? (y/n) ').lower()
         config = take_params(config, config_file, save == 'y')
 
-
-    name = 'data_' + config['name'] + time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime())[:10]
+    feedback = input('Do you want to give feedback to the user? (y/n) ').lower() == 'y'
+    print(feedback)
+    str_time = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime())
+    name = 'data_' + config['name'] + '_' + str_time
+    mocap_name = 'data_mocap_' + config['name'] + '_' + str_time
     data_file = 'archery_graphs/data/data.csv'
-    history_path = name + '.csv'
-    open(history_path, 'w').close()
-    open(data_file, 'w').close()
-    # seconds = int(input("How many seconds do you want to record? Insert an integer number please"))
 
-    feedback = input('Do you want to give feedback to the user? (y/n)').lower() == 'y'
+    if feedback:
+        mocap_name += '_with_feedback'
+        name += '_with_feedback'
+
+    history_path = name + '.csv'
+    mocap_history_path = mocap_name + '.csv'
+
+    print(history_path, mocap_history_path)
+
+    file = open(history_path, 'w')
+    file.write(','.join([ 'barycenter_x', 'barycenter_y',
+                'bow_x', 'bow_y', 'bow_z',
+                'left_shoulder_positions_x', 'left_shoulder_positions_y',
+                'right_shoulder_positions_x', 'right_shoulder_positions_y',
+                'left_elbow_positions_x', 'left_elbow_positions_y',
+                'right_elbow_positions_x', 'right_elbow_positions_y',
+                'left_wrist_positions_x', 'left_wrist_positions_y',
+                'right_wrist_positions_x', 'right_wrist_positions_y']))
+
+    file.close()
+    open(data_file, 'w').close()
+    file = open(mocap_history_path, 'w')
+    file.write(','.join(['left_shoulder_positions_x', 'left_shoulder_positions_y',
+                         'right_shoulder_positions_x', 'right_shoulder_positions_y',
+                         'left_elbow_positions_x', 'left_elbow_positions_y',
+                         'right_elbow_positions_x', 'right_elbow_positions_y',
+                         'left_wrist_positions_x', 'left_wrist_positions_y',
+                         'right_wrist_positions_x', 'right_wrist_positions_y']))
+    file.close()
+
+    exit(6)
+    seconds = int(input("How many seconds do you want to record? Insert an integer number please "))
 
     start = time.time()
     while time.time() - start < seconds:
@@ -253,11 +299,11 @@ def main():
 
             message, address = s.recvfrom(4096)
 
-            if address[0] == '192.168.0.9':  # data from raspberry linked to imu system
+            if sock_dict[s] == '30080':  # address[0] == '192.168.0.9':  # data from raspberry linked to imu system
 
                 compute_arms_points(config, message, value_dict, data_file, history_path)
 
-            elif address[0] == '192.168.0.2':  # data from raspberry linked to the table
+            elif sock_dict[s] == '65000':  # address[0] == '192.168.0.2':  # data from raspberry linked to the table
 
                 sensor_0, sensor_1, sensor_2, sensor_3 = unpack('4i', message)
 
@@ -294,7 +340,7 @@ def main():
                     pd_client.send_message("/x", x_balance)
                     pd_client.send_message("/y", y_balance)
 
-            elif address == '':
+            elif sock_dict[s] == '':  #mocap port
                 print('Mocap')
                 compute_arms_points(config, message, value_dict, None, mocap_history_path)
             else:

@@ -106,9 +106,6 @@ def init():
 
 if __name__ == "__main__":
 
-    print('Is the archer lefthanded? (y/n)')
-    left = sys.stdin.readline().replace('\n', '').lower() == 'y'
-
     # set socket for pc connection
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
@@ -127,7 +124,11 @@ if __name__ == "__main__":
 
     signal.signal(signal.SIGINT, stop_teensy)
 
-    # threshold = 1
+    print('Is the archer lefthanded? (y/n)')
+    left = sys.stdin.readline().replace('\n', '').lower() == 'y'
+
+    print('Do you want to have a tactile feedback? (y/n)')
+    silent = sys.stdin.readline().replace('\n', '').lower() == 'n'
 
     print('Starting Serial connection...')
 
@@ -221,8 +222,9 @@ if __name__ == "__main__":
 
             print('we', avg_angle_we, 'es', avg_angle_es, 'se', avg_angle_se, 'ew', avg_angle_ew)
 
-            actuator = actuator_control(avg_angle_we, avg_angle_es, avg_angle_se, avg_angle_ew, left)
-            ser2.write(actuator)  # actuator.encode('utf-8'))
+            if not silent:
+                actuator = actuator_control(avg_angle_we, avg_angle_es, avg_angle_se, avg_angle_ew, left)
+                ser2.write(actuator)  # actuator.encode('utf-8'))
 
             message = pack('6i', avg_angle_we, avg_angle_es, avg_angle_se, avg_angle_ew, avg_gyro_x, avg_gyro_z)
 
