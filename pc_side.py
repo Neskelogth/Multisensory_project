@@ -4,8 +4,8 @@ import select
 import math
 import time
 
-# import keyboard
-# from pythonosc import udp_client
+import keyboard
+from pythonosc import udp_client
 
 
 def dump_params_to_file(params, file):
@@ -163,10 +163,8 @@ def write_data_on_file(path, history_path, dicts, struct, barycenter=False):
 
 
 def compute_arms_points(config, message, value_dict, data_file, history_path):
-    if data_file is not None:
-        avg_angle_we, avg_angle_es, avg_angle_se, avg_angle_ew, avg_gyro_x, avg_gyro_z = unpack('6i', message)
-    else:
-        avg_angle_we, avg_angle_es, avg_angle_se, avg_angle_ew = unpack('6i', message)
+
+    avg_angle_we, avg_angle_es, avg_angle_se, avg_angle_ew, avg_gyro_x, avg_gyro_z = unpack('6i', message)
 
     point_shoulder_right_x = config['shoulder_length'] / 2
     point_shoulder_right_y = 0
@@ -185,11 +183,8 @@ def compute_arms_points(config, message, value_dict, data_file, history_path):
     point_wrist_right_x, point_wrist_right_y = point_init(angle_ew, config['elbow_wrist_length'], True)
     point_wrist_left_x, point_wrist_left_y = point_init(180 - angle_we, config['elbow_wrist_length'])
 
-    gyro_x, gyro_y, gyro_z = 0, 0, 0
-
-    if data_file is not None:
-        gyro_x, gyro_z = point_init(avg_gyro_x, 1)
-        _, gyro_y = point_init(avg_gyro_z, 1)
+    gyro_x, gyro_z = point_init(avg_gyro_x, 1)
+    _, gyro_y = point_init(avg_gyro_z, 1)
 
     point_elbow_right_x += config['shoulder_length'] / 2
     point_elbow_left_x -= config['shoulder_length'] / 2
@@ -224,7 +219,7 @@ def main():
     value_dict = dict()
     sock_dict = dict()
 
-    # pd_client = udp_client.SimpleUDPClient(pd_host, pd_port)
+    pd_client = udp_client.SimpleUDPClient(pd_host, pd_port)
     for port in ports:
         socket, sock_dict = create_socket(host, port, sock_dict)
         sockets.append(socket)
@@ -251,20 +246,15 @@ def main():
         config = take_params(config, config_file, save == 'y')
 
     feedback = input('Do you want to give feedback to the user? (y/n) ').lower() == 'y'
-    print(feedback)
-    str_time = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime())
+    str_time = str(time.time() * 1000)
+
     name = 'data_' + config['name'] + '_' + str_time
-    mocap_name = 'data_mocap_' + config['name'] + '_' + str_time
     data_file = 'archery_graphs/data/data.csv'
 
     if feedback:
-        mocap_name += '_with_feedback'
         name += '_with_feedback'
 
     history_path = name + '.csv'
-    mocap_history_path = mocap_name + '.csv'
-
-    print(history_path, mocap_history_path)
 
     file = open(history_path, 'w')
     file.write(','.join([ 'barycenter_x', 'barycenter_y',
@@ -278,16 +268,7 @@ def main():
 
     file.close()
     open(data_file, 'w').close()
-    file = open(mocap_history_path, 'w')
-    file.write(','.join(['left_shoulder_positions_x', 'left_shoulder_positions_y',
-                         'right_shoulder_positions_x', 'right_shoulder_positions_y',
-                         'left_elbow_positions_x', 'left_elbow_positions_y',
-                         'right_elbow_positions_x', 'right_elbow_positions_y',
-                         'left_wrist_positions_x', 'left_wrist_positions_y',
-                         'right_wrist_positions_x', 'right_wrist_positions_y']))
-    file.close()
 
-    exit(6)
     seconds = int(input("How many seconds do you want to record? Insert an integer number please "))
 
     start = time.time()
@@ -299,11 +280,11 @@ def main():
 
             message, address = s.recvfrom(4096)
 
-            if sock_dict[s] == '30080':  # address[0] == '192.168.0.9':  # data from raspberry linked to imu system
+            if address[0] == '192.168.0.9':  # data from raspberry linked to imu system
 
                 compute_arms_points(config, message, value_dict, data_file, history_path)
 
-            elif sock_dict[s] == '65000':  # address[0] == '192.168.0.2':  # data from raspberry linked to the table
+            elif address[0] == '192.168.0.2':  # data from raspberry linked to the table
 
                 sensor_0, sensor_1, sensor_2, sensor_3 = unpack('4i', message)
 
@@ -340,9 +321,6 @@ def main():
                     pd_client.send_message("/x", x_balance)
                     pd_client.send_message("/y", y_balance)
 
-            elif sock_dict[s] == '':  #mocap port
-                print('Mocap')
-                compute_arms_points(config, message, value_dict, None, mocap_history_path)
             else:
                 print('Unknown address, something went wrong. Exiting')
                 break

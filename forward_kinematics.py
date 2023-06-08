@@ -110,17 +110,8 @@ if __name__ == "__main__":
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
     # define id for router, and a port to bind
-    host, port = '192.168.0.10', 30080
+    host, port = '192.168.0.100', 30080
     server_address = (host, port)
-
-    # arduino serial id
-    name = '/dev/ttyACM0'
-    ser = serial.Serial(name, 9600, timeout=1)
-    ser.reset_input_buffer()
-
-    # second arduino communication for vibration actuations
-    ser2 = serial.Serial('/dev/ttyACM1', 9600, timeout=1)
-    ser2.reset_input_buffer()
 
     signal.signal(signal.SIGINT, stop_teensy)
 
@@ -131,6 +122,14 @@ if __name__ == "__main__":
     silent = sys.stdin.readline().replace('\n', '').lower() == 'n'
 
     print('Starting Serial connection...')
+
+    name = '/dev/ttyACM0'
+    ser = serial.Serial(name, 9600, timeout=1)
+    ser.reset_input_buffer()
+
+    # second arduino communication for vibration actuations
+    ser2 = serial.Serial('/dev/ttyACM1', 9600, timeout=1)
+    ser2.reset_input_buffer()
 
     prev_angle_se = 0
     prev_angle_es = 0
