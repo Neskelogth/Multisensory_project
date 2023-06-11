@@ -233,8 +233,8 @@ def main():
             else:
                 config[line.split(' ')[0]] = bool(line.split(' ')[1].replace('\n', ''))
 
-    reconfig = input('Do you want to use the previous configuration? (y/n) ')
-    if reconfig == 'y' and not config['elbow_wrist_length'] == -1 and not config['shoulder_elbow_length'] == -1 \
+    keep_conf = input('Do you want to use the previous configuration? (y/n) ')
+    if keep_conf == 'y' and not config['elbow_wrist_length'] == -1 and not config['shoulder_elbow_length'] == -1 \
             and not config['shoulder_length'] == -1 and not config['bow_weight'] == -1 and not config[
                                                                                                    'table_dim'] == -1:
         print('Using old configuration')
@@ -278,13 +278,14 @@ def main():
 
         for s in readable:
 
+            local_port = s.getsockname()[1]
             message, address = s.recvfrom(4096)
 
-            if address[0] == '192.168.0.9':  # data from raspberry linked to imu system
+            if local_port == '30080':  # data from raspberry linked to imu system
 
                 compute_arms_points(config, message, value_dict, data_file, history_path)
 
-            elif address[0] == '192.168.0.2':  # data from raspberry linked to the table
+            elif local_port == '65000':  # data from raspberry linked to the table
 
                 sensor_0, sensor_1, sensor_2, sensor_3 = unpack('4i', message)
 
@@ -320,6 +321,9 @@ def main():
 
                     pd_client.send_message("/x", x_balance)
                     pd_client.send_message("/y", y_balance)
+
+            elif local_port == '26798':
+                pass
 
             else:
                 print('Unknown address, something went wrong. Exiting')

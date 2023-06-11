@@ -1,2 +1,6 @@
 keyboard~=0.13.5
 python-osc~=1.8.1
+
+pandas~=2.0.2
+numpy~=1.24.3
+dtaidistance~=2.3.10
