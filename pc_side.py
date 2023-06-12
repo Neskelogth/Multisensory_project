@@ -72,23 +72,6 @@ def compute_force(voltage):
     return (0.00001 * voltage ** 4 - 0.00045 * voltage ** 3 + 0.00744 * voltage ** 2 + 0.58477 * voltage) * 0.454
 
 
-def find_first_free_index(dictionaries, barycenter):
-    print(dictionaries)
-    index = -1
-    for i in range(len(dictionaries)):
-
-        item = dictionaries[i]
-        l = len(item.keys())
-        if l == 0:
-            return i
-        if barycenter and l == 15:
-            return i
-        elif not barycenter and l == 2:
-            return i
-
-    return index
-
-
 def complete(dictionary):
     return len(list(dictionary.keys())) == 17
 
@@ -223,6 +206,8 @@ def main():
     for port in ports:
         socket, sock_dict = create_socket(host, port, sock_dict)
         sockets.append(socket)
+
+    print(sockets[0].getsockname())
 
     with open(config_file, 'r') as source:
         for line in source:
