@@ -168,10 +168,10 @@ void loop() {
   Serial.println(imu3);
   
   Serial.print("Bow: x = ");
-  Serial.print("0");
+  Serial.print(bow_x);
   Serial.print(" y = ");
-  Serial.print("0");
+  Serial.print(bow_y);
   Serial.print(" z = ");
-  Serial.println("0");
+  Serial.println(bow_z);
 
 }
