@@ -130,27 +130,36 @@ for key in correspondences:
 
     mocap_angles = {
 
-        'we': [angle((sequence_mocap['right_wrist_positions_x'].values.tolist()[i], sequence_mocap['right_wrist_positions_y'].values.tolist()[i], sequence_mocap['right_wrist_positions_z'].values.tolist()[i]),
-                     (sequence_mocap['right_elbow_positions_x'].values.tolist()[i], sequence_mocap['right_elbow_positions_y'].values.tolist()[i], sequence_mocap['right_elbow_positions_z'].values.tolist()[i]),
-                     (sequence_mocap['right_shoulder_positions_x'].values.tolist()[i], sequence_mocap['right_shoulder_positions_y'].values.tolist()[i], sequence_mocap['right_shoulder_positions_z'].values.tolist()[i]))
+        'we': [angle(np.array([sequence_mocap['right_wrist_positions_x'].values.tolist()[i], sequence_mocap['right_wrist_positions_y'].values.tolist()[i], 0]),
+                      np.array([sequence_mocap['right_elbow_positions_x'].values.tolist()[i], sequence_mocap['right_elbow_positions_y'].values.tolist()[i], 0]),
+                      np.array([sequence_mocap['right_shoulder_positions_x'].values.tolist()[i], sequence_mocap['right_shoulder_positions_y'].values.tolist()[i], 0]))
                for i in range(len(sequence_mocap['right_wrist_positions_x'].values.tolist()))],
-        'es': [angle((sequence_mocap['right_elbow_positions_x'].values.tolist()[i], sequence_mocap['right_elbow_positions_y'].values.tolist()[i], sequence_mocap['right_elbow_positions_z'].values.tolist()[i]),
-                     (sequence_mocap['right_shoulder_positions_x'].values.tolist()[i], sequence_mocap['right_shoulder_positions_y'].values.tolist()[i], sequence_mocap['right_shoulder_positions_z'].values.tolist()[i]),
-                     (sequence_mocap['left_shoulder_positions_x'].values.tolist()[i], sequence_mocap['left_shoulder_positions_y'].values.tolist()[i], sequence_mocap['left_shoulder_positions_z'].values.tolist()[i]))
-               for i in range(len(sequence_mocap['right_wrist_positions_x'].values.tolist()))],
-        'se': [angle((sequence_mocap['right_shoulder_positions_x'].values.tolist()[i], sequence_mocap['right_shoulder_positions_y'].values.tolist()[i], sequence_mocap['right_shoulder_positions_z'].values.tolist()[i]),
-                     (sequence_mocap['left_shoulder_positions_x'].values.tolist()[i], sequence_mocap['left_shoulder_positions_y'].values.tolist()[i], sequence_mocap['left_shoulder_positions_z'].values.tolist()[i]),
-                     (sequence_mocap['left_elbow_positions_x'].values.tolist()[i], sequence_mocap['left_elbow_positions_y'].values.tolist()[i], sequence_mocap['left_elbow_positions_z'].values.tolist()[i]))
-               for i in range(len(sequence_mocap['right_wrist_positions_x'].values.tolist()))],
-        'ew': [angle((sequence_mocap['left_shoulder_positions_x'].values.tolist()[i], sequence_mocap['left_shoulder_positions_y'].values.tolist()[i], sequence_mocap['left_shoulder_positions_z'].values.tolist()[i]),
-                     (sequence_mocap['left_elbow_positions_x'].values.tolist()[i], sequence_mocap['left_elbow_positions_y'].values.tolist()[i], sequence_mocap['left_elbow_positions_z'].values.tolist()[i]),
-                     (sequence_mocap['left_wrist_positions_x'].values.tolist()[i], sequence_mocap['left_wrist_positions_y'].values.tolist()[i], sequence_mocap['left_wrist_positions_z'].values.tolist()[i]))
-               for i in range(len(sequence_mocap['right_wrist_positions_x'].values.tolist()))]
+
+        'es': [angle(np.array([sequence_mocap['right_elbow_positions_x'].values.tolist()[i], sequence_mocap['right_elbow_positions_y'].values.tolist()[i], 0]),
+                      np.array([sequence_mocap['right_shoulder_positions_x'].values.tolist()[i], sequence_mocap['right_shoulder_positions_y'].values.tolist()[i], 0]),
+                      np.array([sequence_mocap['left_shoulder_positions_x'].values.tolist()[i], sequence_mocap['left_shoulder_positions_y'].values.tolist()[i], 0]))
+               for i in range(len(sequence_mocap['right_elbow_positions_x'].values.tolist()))],
+
+        'se': [angle(np.array([sequence_mocap['right_shoulder_positions_x'].values.tolist()[i], sequence_mocap['right_shoulder_positions_y'].values.tolist()[i], 0]),
+                     np.array([sequence_mocap['left_shoulder_positions_x'].values.tolist()[i], sequence_mocap['left_shoulder_positions_y'].values.tolist()[i], 0]),
+                     np.array([sequence_mocap['left_elbow_positions_x'].values.tolist()[i], sequence_mocap['left_elbow_positions_y'].values.tolist()[i], 0]))
+               for i in range(len(sequence_mocap['right_shoulder_positions_x'].values.tolist()))],
+
+        'ew': [angle(np.array([sequence_mocap['left_shoulder_positions_x'].values.tolist()[i], sequence_mocap['left_shoulder_positions_y'].values.tolist()[i], 0]),
+                     np.array([sequence_mocap['left_elbow_positions_x'].values.tolist()[i], sequence_mocap['left_elbow_positions_y'].values.tolist()[i], 0]),
+                     np.array([sequence_mocap['left_wrist_positions_x'].values.tolist()[i], sequence_mocap['left_wrist_positions_y'].values.tolist()[i], 0]))
+               for i in range(len(sequence_mocap['left_shoulder_positions_x'].values.tolist()))]
     }
 
     mocap_points = dict()
 
-    mocap_points['left_shoulder_positions_x'], mocap_points['left_shoulder_positions_y'], mocap_points['right_shoulder_positions_x'], mocap_points['right_shoulder_positions_y'], mocap_points['left_elbow_positions_x'],  mocap_points['left_elbow_positions_y'], mocap_points['right_elbow_positions_x'], mocap_points['right_elbow_positions_y'], mocap_points['left_wrist_positions_x'], mocap_points['left_wrist_positions_y'], mocap_points['right_wrist_positions_x'], mocap_points['right_wrist_positions_y'] = compute_points(mocap_angles['we'], mocap_angles['es'], mocap_angles['se'], mocap_angles['ew'], config)
+    mocap_points['left_shoulder_positions_x'], mocap_points['left_shoulder_positions_y'], \
+        mocap_points['right_shoulder_positions_x'], mocap_points['right_shoulder_positions_y'], \
+        mocap_points['left_elbow_positions_x'],  mocap_points['left_elbow_positions_y'], \
+        mocap_points['right_elbow_positions_x'], mocap_points['right_elbow_positions_y'], \
+        mocap_points['left_wrist_positions_x'], mocap_points['left_wrist_positions_y'], \
+        mocap_points['right_wrist_positions_x'], mocap_points['right_wrist_positions_y'] = \
+        compute_points(mocap_angles['we'], mocap_angles['es'], mocap_angles['se'], mocap_angles['ew'], config)
 
     for k in keys_to_examine:
         imus = sequence_imu[k].values.tolist()
