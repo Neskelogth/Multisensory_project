@@ -77,7 +77,6 @@ def complete(dictionary):
 
 
 def write_data(path, history_path, dictionary):
-    if path is not None:  # mocap only record history
         with open(path, 'w') as target:
             target.write(str(dictionary['barycenter_x']) + ',' + str(dictionary['barycenter_y']) + ',' +
                          str(dictionary['bow_x']) + ',' + str(dictionary['bow_y']) + ',' + str(dictionary['bow_z']) + ',' +
@@ -89,7 +88,8 @@ def write_data(path, history_path, dictionary):
                          str(dictionary['right_wrist_positions_x']) + ',' + str(dictionary['right_wrist_positions_y']) + '\n')
 
         with open(history_path, 'a') as target:
-            target.write(str(dictionary['barycenter_x']) + ',' + str(dictionary['barycenter_y']) + ',' +
+            target.write(str(time.time()),
+                         str(dictionary['barycenter_x']) + ',' + str(dictionary['barycenter_y']) + ',' +
                          str(dictionary['bow_x']) + ',' + str(dictionary['bow_y']) + ',' + str(dictionary['bow_z']) + ',' +
                          str(dictionary['left_shoulder_positions_x']) + ',' + str(dictionary['left_shoulder_positions_y']) + ',' +
                          str(dictionary['right_shoulder_positions_x']) + ',' + str(dictionary['right_shoulder_positions_y']) + ',' +
@@ -97,15 +97,7 @@ def write_data(path, history_path, dictionary):
                          str(dictionary['right_elbow_positions_x']) + ',' + str(dictionary['right_elbow_positions_y']) + ',' +
                          str(dictionary['left_wrist_positions_x']) + ',' + str(dictionary['left_wrist_positions_y']) + ',' +
                          str(dictionary['right_wrist_positions_x']) + ',' + str(dictionary['right_wrist_positions_y']) + '\n')
-    else:
-        with open(history_path, 'a') as target:
-            target.write(str(dictionary['left_shoulder_positions_x']) + ',' + str(dictionary['left_shoulder_positions_y']) + ',' +
-                         str(dictionary['right_shoulder_positions_x']) + ',' + str(dictionary['right_shoulder_positions_y']) + ',' +
-                         str(dictionary['left_elbow_positions_x']) + ',' + str(dictionary['left_elbow_positions_y']) + ',' +
-                         str(dictionary['right_elbow_positions_x']) + ',' + str(dictionary['right_elbow_positions_y']) + ',' +
-                         str(dictionary['left_wrist_positions_x']) + ',' + str(dictionary['left_wrist_positions_y']) + ',' +
-                         str(dictionary['right_wrist_positions_x']) + ',' + str(dictionary['right_wrist_positions_y']) + '\n')
-
+ 
 
 def write_data_on_file(path, history_path, dicts, struct, barycenter=False):
 
@@ -242,7 +234,7 @@ def main():
     history_path = name + '.csv'
 
     file = open(history_path, 'w')
-    file.write(','.join([ 'barycenter_x', 'barycenter_y',
+    file.write(','.join(['Time', 'barycenter_x', 'barycenter_y',
                 'bow_x', 'bow_y', 'bow_z',
                 'left_shoulder_positions_x', 'left_shoulder_positions_y',
                 'right_shoulder_positions_x', 'right_shoulder_positions_y',
