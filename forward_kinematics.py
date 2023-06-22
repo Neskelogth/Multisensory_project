@@ -38,47 +38,47 @@ def actuator_control(angle_es, angle_we, angle_se, angle_ew, left):
         # per calcolare il terzo angolo sottrai a 180 gli altri due angoli
         # l'angolo tra i due polsi sta tra 10 e 12 gradi
 
-        if 8 < angle_we < 352:  #
-            one_hot[0] = 1
-        else:
+        if angle_we < 10 or angle_we > 350:  #
             one_hot[0] = 0
-
-        if 4 < angle_es < 356:
-            one_hot[1] = 1
         else:
+            one_hot[0] = 1
+
+        if 0 < angle_es < 15 or angle_es > 355:
             one_hot[1] = 0
+        else:
+            one_hot[1] = 1
 
         # for right arm
 
-        if 7 < angle_se < 21:
+        if 305 < angle_se < 325:
             one_hot[2] = 0
         else:
             one_hot[2] = 1
 
-        if 163 < angle_ew < 178:
+        if 180 < angle_ew < 200:
             one_hot[3] = 0
         else:
             one_hot[3] = 1
 
     else:
-        if 8 < angle_ew < 352:  #
-            one_hot[3] = 1
-        else:
+        if angle_ew < 10 or angle_ew > 350:  #
             one_hot[3] = 0
-
-        if 4 < angle_se < 356:
-            one_hot[2] = 1
         else:
+            one_hot[3] = 1
+
+        if 0 < angle_se < 15 or angle_se > 355:
             one_hot[2] = 0
+        else:
+            one_hot[2] = 1
 
         # for right arm
 
-        if 1 < angle_es < 9:
+        if 305 < angle_es < 325:
             one_hot[1] = 0
         else:
             one_hot[1] = 1
 
-        if 163 < angle_we < 178:
+        if 180 < angle_we < 200:
             one_hot[0] = 0
         else:
             one_hot[0] = 1

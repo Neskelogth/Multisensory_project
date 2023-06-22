@@ -88,7 +88,7 @@ def write_data(path, history_path, dictionary):
                          str(dictionary['right_wrist_positions_x']) + ',' + str(dictionary['right_wrist_positions_y']) + '\n')
 
         with open(history_path, 'a') as target:
-            target.write(str(time.time()),
+            target.write(str(time.time()) + ',' + 
                          str(dictionary['barycenter_x']) + ',' + str(dictionary['barycenter_y']) + ',' +
                          str(dictionary['bow_x']) + ',' + str(dictionary['bow_y']) + ',' + str(dictionary['bow_z']) + ',' +
                          str(dictionary['left_shoulder_positions_x']) + ',' + str(dictionary['left_shoulder_positions_y']) + ',' +
@@ -241,7 +241,7 @@ def main():
                 'left_elbow_positions_x', 'left_elbow_positions_y',
                 'right_elbow_positions_x', 'right_elbow_positions_y',
                 'left_wrist_positions_x', 'left_wrist_positions_y',
-                'right_wrist_positions_x', 'right_wrist_positions_y']))
+                'right_wrist_positions_x', 'right_wrist_positions_y\n']))
 
     file.close()
     open(data_file, 'w').close()
@@ -258,11 +258,11 @@ def main():
             local_port = s.getsockname()[1]
             message, address = s.recvfrom(4096)
 
-            if local_port == '30080':  # data from raspberry linked to imu system
+            if local_port == 30080:  # data from raspberry linked to imu system
 
                 compute_arms_points(config, message, value_dict, data_file, history_path)
 
-            elif local_port == '65000':  # data from raspberry linked to the table
+            elif local_port == 65000:  # data from raspberry linked to the table
 
                 sensor_0, sensor_1, sensor_2, sensor_3 = unpack('4i', message)
 
@@ -272,11 +272,15 @@ def main():
                 sensor_2_force = compute_force(sensor_2) * 0.37
                 sensor_3_force = compute_force(sensor_3) * 0.4
 
-                x_balance = (sensor_1_force * 9.81 * config['table_dim'] + sensor_2_force * 9.81 * config['table_dim']
-                             - (7.1 * 9.81 * config['table_dim'] / 2)) / (config['archer_weight'] * 9.81)
-                y_balance = (sensor_0_force * 9.81 * config['table_dim'] + sensor_1_force * 9.81 * config['table_dim']
-                             - (7.1 * 9.81 * config['table_dim'] / 2)) / (config['archer_weight'] * 9.81)
+                sum_forces = sensor_0_force + sensor_1_force + sensor_2_force + sensor_3_force
+                #print(sensor_0_force, sensor_1_force, sensor_2_force, sensor_3_force)
 
+                x_balance = (sensor_1_force * 9.81 * config['table_dim'] + sensor_2_force * 9.81 * config['table_dim']
+                             ) / (sum_forces * 9.81)
+                y_balance = (sensor_0_force * 9.81 * config['table_dim'] + sensor_1_force * 9.81 * config['table_dim']
+                             ) / (sum_forces * 9.81)
+
+                #- (7.1 * 9.81 * config['table_dim'] / 2)
                 arm_length = config['shoulder_length'] / 2 + config['shoulder_elbow_length'] + config['elbow_wrist_length']
                 total_weight = config['archer_weight'] + config['bow_weight']
 
@@ -286,21 +290,18 @@ def main():
                 # position plus the arm length)
                 # Even if it is a simplification, this is still a better result than having the center of mass of
                 # the complete system
-                x_balance = x_balance - (arm_length / 100 * config['bow_weight'] / total_weight)
+                # x_balance = x_balance - (arm_length / 100 * config['bow_weight'] / total_weight)
+
+                x_balance = x_balance * 2 / 0.6 - 1
+                y_balance = y_balance * 2 / 0.6 - 1
+                #print(x_balance, y_balance)
 
                 struct = pack('2f', x_balance, y_balance)
                 write_data_on_file(data_file, history_path, value_dict, struct, True)
 
                 if feedback:
-
-                    x_balance = x_balance * 2 / 0.6 - 1
-                    y_balance = y_balance * 2 / 0.6 - 1
-
                     pd_client.send_message("/x", x_balance)
                     pd_client.send_message("/y", y_balance)
-
-            elif local_port == '26798':
-                pass
 
             else:
                 print('Unknown address, something went wrong. Exiting')
