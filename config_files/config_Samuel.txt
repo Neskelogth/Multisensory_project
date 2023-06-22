@@ -1,0 +1,8 @@
+bow_weight 2.1
+table_dim 0.6
+shoulder_length 50
+shoulder_elbow_length 33
+elbow_wrist_length 26
+archer_weight 0
+lefthanded 0
+name Samuel
