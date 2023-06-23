@@ -1,6 +1,7 @@
 import socket
 import pickle as p
 import numpy as np
+import time
 
 ########## Target Markers ##########
 
@@ -17,8 +18,8 @@ IP_DataFrom = "127.0.0.1"
 Port_DataFrom = 1234
 
 IP_DataGoTo = "127.0.0.1"
-IP_DataGoTo = "172.27.174.150" #change to control pc ip
-Port_DataGoTo = 12345
+IP_DataGoTo = "192.168.0.100" #change to control pc ip
+Port_DataGoTo = 26879
 
 """ Creating the UDP socket """
 PC_NatNet_s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -58,7 +59,7 @@ def vectorize(p1,p2):
 ########## Data buffers ##########
 
 # marker list size
-max_marker_size = 32
+max_marker_size = 6
 
 # data_opti_buf / data_opti_buf_1set
 # saves up to "max_marker_size" markers, with pos x/y/z for current data
@@ -79,11 +80,12 @@ data_1set = False
 # catalog between marker ID and position on buffers/flags
 Catalog_ID = np.full(max_marker_size, np.nan)
 
-#TODO: change order and add marker till 32
-Marker_Position_Needed = [19,20,21,8,7,9,5,4,6,3,10,16,15,17,13,12,14,11,18,1,2,0]
+#TODO: change order
+Marker_Position_Needed = [21,18,19,26,25,28]
 
 def Trans_MarkerID_to_ArrayIndex(target_id):
-    if target_id >=0 and target_id <= 21:
+    
+    if target_id in Marker_Position_Needed:
         index_local = Marker_Position_Needed.index(target_id)
         if np.isnan(Catalog_ID[index_local]):
             Catalog_ID[index_local] = target_id
@@ -98,6 +100,10 @@ loop_counter_my_1 = 0
 ########## Main process ##########
 if __name__ == "__main__":
     
+    open('./test_data/angles/mocap_Eleonora_16.csv','w').close()
+        
+    file = open('./test_data/angles/mocap_Eleonora_16.csv','a')
+
     while True:
         data_opti_buf = np.zeros((max_marker_size,3))
         data_opti_buf_1set = np.zeros((max_marker_size,3))
@@ -122,7 +128,7 @@ if __name__ == "__main__":
                 loop_counter_my_1 = 0
                 #print(Catalog_ID)
 
-            # Collect an instance of the 32 markers
+            # Collect an instance of the 6 markers
 
             if Index_toSave != None:
                 count_marker += 1
@@ -132,17 +138,34 @@ if __name__ == "__main__":
                     flag_opti_recv = np.zeros(max_marker_size) #flag reset
 
                 data_opti_buf[Index_toSave] = data[2:5] #x/y/z pos
+                data_opti_buf[Index_toSave][2] = 0
                 flag_opti_recv[Index_toSave] = 1
 
-                if count_marker < 32 and data_1set == True:
+                if data_1set == True:
                     data_1set = False
                     data_opti_buf = np.zeros((max_marker_size,3))
                     count_marker = 0
+                    file.write(str(time.time()*1000) + ',' + ','.join([str(data_opti_buf_1set[0][i]) for i in range(3)]) +
+                                ',' + ','.join([str(data_opti_buf_1set[1][i]) for i in range(3)]) +
+                                ',' + ','.join([str(data_opti_buf_1set[2][i]) for i in range(3)]) + 
+                                ',' + ','.join([str(data_opti_buf_1set[3][i]) for i in range(3)]) +
+                                ',' + ','.join([str(data_opti_buf_1set[4][i]) for i in range(3)]) +
+                                ',' + ','.join([str(data_opti_buf_1set[5][i]) for i in range(3)]) + '\n')
+                    data_opti_buf_1set = data_opti_buf
 
-                if(data_1set == True):
-                    data_1set = False
-                    break
+        
         print(data_opti_buf_1set)
         print("#################################################")
 
-        PC_Chair_c.sendto(p.dumps(data_opti_buf_1set),PC_Chair_c_port)
+        final_angles = []
+        final_angles.append(str(angle(data_opti_buf_1set[0],data_opti_buf_1set[1],data_opti_buf_1set[2])))
+        final_angles.append(str(angle(data_opti_buf_1set[1],data_opti_buf_1set[2],data_opti_buf_1set[3])))
+        final_angles.append(str(angle(data_opti_buf_1set[2],data_opti_buf_1set[3],data_opti_buf_1set[4])))
+        final_angles.append(str(angle(data_opti_buf_1set[3],data_opti_buf_1set[4],data_opti_buf_1set[5])))
+
+        print(final_angles)
+
+        
+        file.write(str(time.time()*1000) + ',' + ','.join(final_angles) + '\n')
+
+        #PC_Chair_c.sendto(p.dumps(final_angles),PC_Chair_c_port)
