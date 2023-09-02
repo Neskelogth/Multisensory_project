@@ -31,6 +31,23 @@ then we are using the 0x70 address.*/
 
 #define BAUD_RATE 9600
 
+//filtering data
+
+float filtered_elbowL = 0.0;
+float filtered_shoulderL = 0.0;
+float filtered_shoulderR = 0.0;
+float filtered_elbowR = 0.0;
+float filtered_bow_x = 0.0;
+float filtered_bow_y = 0.0;
+float filtered_bow_z = 0.0;
+
+float LPF(float filtered, float raw){
+  // Filter constant
+  float alpha = 0.6; // Smoothing factor (0 < alpha < 1)
+  filtered = alpha * raw + (1 - alpha) * filtered;
+  return filtered;
+}
+
 /**************************************************************************/
 /* Choose bus */
 /**************************************************************************/
@@ -63,6 +80,8 @@ void init_sensor(uint8_t i, Adafruit_BNO055 bno){
     Serial.println(F(" NOT detected"));*/
     while(1);
   }
+  
+  delay(1000);
 }
 
 
@@ -104,45 +123,53 @@ void loop() {
      The Yaw values are between 0° to +360°
      The Roll values are between -90° and +90°
      The Pitch values are between -180° and +180°
+     
     */ 
     
     case 0:
       sensors_event_t event0;
       bno_elbowL.getEvent(&event0, Adafruit_BNO055::VECTOR_EULER);
+      filtered_elbowL = LPF(filtered_elbowL, event0.orientation.x);
       Serial.print("Imu: elbowL = ");
-      Serial.print(event0.orientation.x*1000);
+      Serial.print(filtered_elbowL*1000);
       break;
       
     case 1:
       sensors_event_t event1;
       bno_shoulderL.getEvent(&event1, Adafruit_BNO055::VECTOR_EULER);
+      filtered_shoulderL = LPF(filtered_shoulderL, event1.orientation.x);
       Serial.print(" shoulderL = ");
-      Serial.print(event1.orientation.x*1000);
+      Serial.print(filtered_shoulderL*1000);
       break;
       
     case 2:
       sensors_event_t event2;
       bno_shoulderR.getEvent(&event2,  Adafruit_BNO055::VECTOR_EULER);  
+      filtered_shoulderR = LPF(filtered_shoulderR, event2.orientation.x);
       Serial.print(" shoulderR = ");
-      Serial.print(event2.orientation.x*1000);
+      Serial.print(filtered_shoulderR*1000);
       break;
       
     case 3:
       sensors_event_t event3;
       bno_elbowR.getEvent(&event3,  Adafruit_BNO055::VECTOR_EULER);
+      filtered_elbowR = LPF(filtered_elbowR, event3.orientation.x);
       Serial.print(" elbowR = ");
-      Serial.println(event3.orientation.x*1000);
+      Serial.println(filtered_elbowR*1000);
       break;
 
     case 4:
       sensors_event_t event4;
       bno_bow.getEvent(&event4,  Adafruit_BNO055::VECTOR_EULER);
+      filtered_bow_x = LPF(filtered_bow_x, event4.orientation.x);
+      filtered_bow_y = LPF(filtered_bow_y, event4.orientation.y);
+      filtered_bow_z = LPF(filtered_bow_z, event4.orientation.z);
       Serial.print("Bow: x = ");
-      Serial.print(event4.orientation.x*1000);
+      Serial.print(filtered_bow_x*1000);
       Serial.print(" y = ");
-      Serial.print(event4.orientation.y*1000);
+      Serial.print(filtered_bow_y*1000);
       Serial.print(" z = ");
-      Serial.println(event4.orientation.z*1000);   
+      Serial.println(filtered_bow_z*1000);   
       break;
       
     }
