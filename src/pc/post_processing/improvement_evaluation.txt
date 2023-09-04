@@ -1,0 +1,84 @@
+Alberto's differences with ideal values: we: 5.633427304342836	es: 2.05492284641034	se: -252.72180861972396	ew: 30.442690533650893	
+Alberto's state of improvement in the angles is: we: True	es: True	se: False	ew: False	
+The experiments with feedback show that the difference with the ideal values is: we: 4.230075319357297	es: 4.17564553676846	se: -263.6946090110368	ew: -10.341313020359266	
+Alberto's state of improvement in the angles during the feedback tests is: we: True	es: True	se: False	ew: True	
+Overall, considering the last measurements, the values show that the angles in good positions are: we: True	es: True	se: False	ew: False	
+----------------------------------------------------------------------
+Alvise's differences with ideal values: we: 8.818790885449753	es: 3.6415302122489366	se: -17.298772026780654	ew: 7.840263126920651	
+Alvise's state of improvement in the angles is: we: True	es: False	se: False	ew: False	
+The experiments with feedback show that the difference with the ideal values is: we: 5.137290959879647	es: 2.6250021963611023	se: -33.25925228604653	ew: 11.277774361574075	
+Alvise's state of improvement in the angles during the feedback tests is: we: True	es: True	se: False	ew: False	
+Overall, considering the last measurements, the values show that the angles in good positions are: we: True	es: True	se: False	ew: True	
+----------------------------------------------------------------------
+Elena's differences with ideal values: we: 5.826134284402115	es: -2.534396472402107	se: -274.56084480708984	ew: 13.354493782010573	
+Elena's state of improvement in the angles is: we: False	es: False	se: True	ew: True	
+The experiments with feedback show that the difference with the ideal values is: we: 2.064511869459181	es: 1.1479597743979522	se: -288.70918333744913	ew: -7.755107015306127	
+Elena's state of improvement in the angles during the feedback tests is: we: True	es: True	se: False	ew: False	
+Overall, considering the last measurements, the values show that the angles in good positions are: we: True	es: True	se: False	ew: False	
+----------------------------------------------------------------------
+Eleonora's differences with ideal values: we: 9.958242688807902	es: -1.3535965061565522	se: -257.90697948843507	ew: 22.072455376193883	
+Eleonora's state of improvement in the angles is: we: False	es: True	se: True	ew: True	
+The experiments with feedback show that the difference with the ideal values is: we: 36.743117982865705	es: 0.88059202140796	se: -272.46766006975054	ew: 12.154225019402977	
+Eleonora's state of improvement in the angles during the feedback tests is: we: False	es: False	se: False	ew: False	
+Overall, considering the last measurements, the values show that the angles in good positions are: we: True	es: True	se: False	ew: False	
+----------------------------------------------------------------------
+Federica's differences with ideal values: we: 6.78555723267606	es: 4.120097909205749	se: -259.8182315744025	ew: 21.50041642648193	
+Federica's state of improvement in the angles is: we: False	es: True	se: True	ew: True	
+The experiments with feedback show that the difference with the ideal values is: we: 15.741838669367224	es: 4.400776908183308	se: -254.0739281223772	ew: 32.45135844440938	
+Federica's state of improvement in the angles during the feedback tests is: we: False	es: False	se: True	ew: True	
+Overall, considering the last measurements, the values show that the angles in good positions are: we: True	es: True	se: False	ew: False	
+----------------------------------------------------------------------
+Filippo's differences with ideal values: we: 57.526608699246395	es: 15.418985765425036	se: -275.11557897087727	ew: -5.032342240455557	
+Filippo's state of improvement in the angles is: we: False	es: False	se: False	ew: True	
+The experiments with feedback show that the difference with the ideal values is: we: 18.975024534985476	es: 3.1812031897822344	se: -279.4496643443055	ew: -10.295297108553914	
+Filippo's state of improvement in the angles during the feedback tests is: we: False	es: False	se: False	ew: True	
+Overall, considering the last measurements, the values show that the angles in good positions are: we: False	es: False	se: False	ew: True	
+----------------------------------------------------------------------
+Gloria's differences with ideal values: we: 7.577571598828657	es: 5.8439398454303015	se: -127.43223215886007	ew: -23.111473039819412	
+Gloria's state of improvement in the angles is: we: True	es: True	se: True	ew: False	
+The experiments with feedback show that the difference with the ideal values is: we: 3.8071573985522007	es: -3.4444493738979154	se: -37.333325708747495	ew: -26.407418251561392	
+Gloria's state of improvement in the angles during the feedback tests is: we: True	es: True	se: True	ew: False	
+Overall, considering the last measurements, the values show that the angles in good positions are: we: True	es: True	se: False	ew: False	
+----------------------------------------------------------------------
+Jacopo's differences with ideal values: we: 8.08188849954214	es: 1.3078647944454704	se: -187.67166195044564	ew: 46.118287851712424	
+Jacopo's state of improvement in the angles is: we: True	es: True	se: True	ew: False	
+The experiments with feedback show that the difference with the ideal values is: we: 20.385561115391944	es: 2.8851303881071813	se: -242.88513386251017	ew: 60.47972665079526	
+Jacopo's state of improvement in the angles during the feedback tests is: we: True	es: True	se: True	ew: False	
+Overall, considering the last measurements, the values show that the angles in good positions are: we: True	es: True	se: False	ew: False	
+----------------------------------------------------------------------
+Letizia's differences with ideal values: we: 10.616771004486607	es: -0.6796119471336299	se: -232.00549131666912	ew: -22.158898765589335	
+Letizia's state of improvement in the angles is: we: False	es: True	se: True	ew: False	
+The experiments with feedback show that the difference with the ideal values is: we: 10.896351652875712	es: -1.8918967614590978	se: -297.59459432297206	ew: -25.35134654584534	
+Letizia's state of improvement in the angles during the feedback tests is: we: False	es: True	se: False	ew: False	
+Overall, considering the last measurements, the values show that the angles in good positions are: we: False	es: True	se: False	ew: False	
+----------------------------------------------------------------------
+LorenzoB's differences with ideal values: we: 13.434036397266706	es: 0.7156830057840166	se: -269.85403021112285	ew: -6.4627003562268515	
+LorenzoB's state of improvement in the angles is: we: False	es: True	se: False	ew: True	
+The experiments with feedback show that the difference with the ideal values is: we: 8.02522804222369	es: 1.091522076707809	se: -269.77626875780413	ew: -1.9559265624477968	
+LorenzoB's state of improvement in the angles during the feedback tests is: we: False	es: True	se: True	ew: False	
+Overall, considering the last measurements, the values show that the angles in good positions are: we: False	es: True	se: False	ew: True	
+----------------------------------------------------------------------
+LorenzoP's differences with ideal values: we: 9.469272981299172	es: 0.6660276807272713	se: -229.44927449248658	ew: -13.872233087035688	
+LorenzoP's state of improvement in the angles is: we: True	es: True	se: False	ew: True	
+The experiments with feedback show that the difference with the ideal values is: we: 15.066694700037129	es: 2.07546703060085	se: -297.2893071140696	ew: -4.701253728892718	
+LorenzoP's state of improvement in the angles during the feedback tests is: we: False	es: True	se: False	ew: True	
+Overall, considering the last measurements, the values show that the angles in good positions are: we: True	es: True	se: False	ew: False	
+----------------------------------------------------------------------
+Marco's differences with ideal values: we: 8.55464350901779	es: -2.758012084753871	se: -276.88612000820416	ew: 3.1779410887992707	
+Marco's state of improvement in the angles is: we: False	es: False	se: True	ew: False	
+The experiments with feedback show that the difference with the ideal values is: we: 6.347643260793467	es: 5.390120467517704	se: -271.5678996581325	ew: 11.392590687197945	
+Marco's state of improvement in the angles during the feedback tests is: we: False	es: False	se: True	ew: False	
+Overall, considering the last measurements, the values show that the angles in good positions are: we: True	es: True	se: False	ew: True	
+----------------------------------------------------------------------
+Samuel's differences with ideal values: we: 3.2116407917277208	es: -2.588238583175129	se: -293.90196026665575	ew: -3.196073621214216	
+Samuel's state of improvement in the angles is: we: True	es: True	se: False	ew: True	
+The experiments with feedback show that the difference with the ideal values is: we: 2.930447726674901	es: -2.159747618648095	se: -71.43449808114845	ew: -16.194897577415848	
+Samuel's state of improvement in the angles during the feedback tests is: we: True	es: False	se: False	ew: True	
+Overall, considering the last measurements, the values show that the angles in good positions are: we: True	es: True	se: False	ew: True	
+----------------------------------------------------------------------
+Sofia's differences with ideal values: we: 7.17272336618376	es: 5.057038671904647	se: -208.8750615390278	ew: -11.905044920801641	
+Sofia's state of improvement in the angles is: we: True	es: True	se: False	ew: True	
+The experiments with feedback show that the difference with the ideal values is: we: 2.4906773153851915	es: -1.7576715359208555	se: -64.082815439339	ew: -9.3895826294626	
+Sofia's state of improvement in the angles during the feedback tests is: we: True	es: True	se: True	ew: True	
+Overall, considering the last measurements, the values show that the angles in good positions are: we: True	es: True	se: False	ew: False	
+----------------------------------------------------------------------

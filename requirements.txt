@@ -2,5 +2,8 @@ keyboard~=0.13.5
 python-osc~=1.8.1
 
 pandas~=2.0.2
-numpy~=1.24.3
+numpy~=1.25.0
 dtaidistance~=2.3.10
+tqdm~=4.65.0
+matplotlib~=3.7.1
+seaborn~=0.12.0

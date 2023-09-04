@@ -3,3 +3,5 @@ venv/
 data.csv
 data_generator.py
 fw_backup
+*.zip
+data/post_processing_plots/

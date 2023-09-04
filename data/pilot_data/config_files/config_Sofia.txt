@@ -1,0 +1,6 @@
+table_dim 0.6
+shoulder_length 42
+shoulder_elbow_length 32
+elbow_wrist_length 28
+lefthanded 0
+name Sofia
