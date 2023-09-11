@@ -68,18 +68,20 @@ void setup() {
 }
 
 void draw() {
-  
-  fill(0);
-  circle(width / 2, height / 2, 40);
-  
+ 
   background(255);
   //subcanvas
+  
+  fill(255,0,0);
+  circle(width / 2, height / 2 + 10, 40);
 
   canvas[0].showAxis("BARYCENTER POSITION");
   canvas[1].showAxis("ARMS POSITION");
     
   canvas[0].display();
   canvas[1].display();
+   
+
    
   //loading csv file
   Table table;
@@ -96,7 +98,7 @@ void draw() {
 
   bary.display(width / 2, height / 4, size_h - 20, size_h - 20);  // to make sure points are never going to be on the border of the window
   archer.display(width / 2, height / 4, size_w - 20, size_h - 20, max_x_length, max_y_length);  
-  
+
   //noLoop();
   
 }
