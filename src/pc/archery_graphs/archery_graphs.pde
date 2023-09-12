@@ -67,10 +67,11 @@ void setup() {
   
 }
 
-void draw() {  
+void draw() {
+ 
   background(255);
   //subcanvas
-
+  
   fill(255, 0, 0);
   circle(width / 2, height / 2, 40);
 
@@ -95,7 +96,6 @@ void draw() {
 
   bary.display(width / 2, 5 * height / 6, size_h - 20, size_h - 20);  // to make sure points are never going to be on the border of the window
   archer.display(width / 2, height / 3, size_w - 20, height - 100, max_x_length, max_y_length);  
-  
+
   //noLoop();
-  
 }
