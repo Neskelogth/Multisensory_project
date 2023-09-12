@@ -28,10 +28,10 @@ void setup() {
   //set the title of the window
   surface.setTitle("Archery Visual Feedback Control");
   surface.setResizable(false);
-  surface.setLocation(100, 100);
+  //surface.setLocation(100, 100);
   //windows size(w,h)
-  size(1500, 900);
-  //fullScreen();
+  //size(1500, 900);
+  fullScreen();
   //white background
   background(255);
   noStroke();
@@ -61,22 +61,21 @@ void setup() {
   //setting position of all subcanvas (x,y,w,h)
   canvas = new subCanvas[2];
   size_w = (width - 140);
-  size_h = (height - 200 ) / 2;
-  canvas[0] = new subCanvas(width / 2, 3 * height / 4, 5, size_h, size_h);
-  canvas[1] = new subCanvas(width / 2, height / 4, 5, size_w, size_h);
+  size_h = (height - 200 ) / 3;
+  canvas[1] = new subCanvas(width / 2, 5 * height / 6, 5, size_h, size_h);
+  canvas[0] = new subCanvas(width / 2, height / 3, 5, size_w - 300, 2 * height / 3 - 160);
   
 }
 
-void draw() {
-  
-  fill(0);
-  circle(width / 2, height / 2, 40);
-  
+void draw() {  
   background(255);
   //subcanvas
 
-  canvas[0].showAxis("BARYCENTER POSITION");
-  canvas[1].showAxis("ARMS POSITION");
+  fill(255, 0, 0);
+  circle(width / 2, height / 2, 40);
+
+  canvas[1].showAxis("BARYCENTER POSITION");
+  canvas[0].showAxis("ARMS POSITION");
     
   canvas[0].display();
   canvas[1].display();
@@ -94,8 +93,8 @@ void draw() {
       //println("Opened file while writing probably");
   }
 
-  bary.display(width / 2, height / 4, size_h - 20, size_h - 20);  // to make sure points are never going to be on the border of the window
-  archer.display(width / 2, height / 4, size_w - 20, size_h - 20, max_x_length, max_y_length);  
+  bary.display(width / 2, 5 * height / 6, size_h - 20, size_h - 20);  // to make sure points are never going to be on the border of the window
+  archer.display(width / 2, height / 3, size_w - 20, height - 100, max_x_length, max_y_length);  
   
   //noLoop();
   
