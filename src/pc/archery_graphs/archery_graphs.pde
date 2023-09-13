@@ -61,10 +61,11 @@ void setup() {
   //setting position of all subcanvas (x,y,w,h)
   canvas = new subCanvas[2];
   size_w = (width - 140);
-  size_h = (height - 200 ) / 3;
-  canvas[1] = new subCanvas(width / 2, 5 * height / 6, 5, size_h, size_h);
-  canvas[0] = new subCanvas(width / 2, height / 3, 5, size_w - 300, 2 * height / 3 - 160);
-  
+  size_h = (height - 200 ) / 2;
+  //canvas[1] = new subCanvas(width / 2, 5 * height / 6, 5, size_h, size_h);
+  //canvas[0] = new subCanvas(width / 2, height / 3, 5, size_w - 300, 2 * height / 3 - 160);
+  canvas[1] = new subCanvas( width / 4, 3 * height / 6, 5, size_h, size_h);
+  canvas[0] = new subCanvas(3*width / 4, height / 2, 5, 2 * height / 3 - 100,size_w - 800);
 }
 
 void draw() {
@@ -93,9 +94,11 @@ void draw() {
   }catch(Exception e){
       //println("Opened file while writing probably");
   }
+  //bary.display(width / 2, 5 * height / 6, size_h - 20, size_h - 20);  // to make sure points are never going to be on the border of the window
+  //archer.display(width / 2, height / 3, size_w - 20, height - 100, max_x_length, max_y_length);  
 
-  bary.display(width / 2, 5 * height / 6, size_h - 20, size_h - 20);  // to make sure points are never going to be on the border of the window
-  archer.display(width / 2, height / 3, size_w - 20, height - 100, max_x_length, max_y_length);  
+  bary.display(width / 4, 3 * height / 6, size_h - 20, size_h - 20);  // to make sure points are never going to be on the border of the window
+  archer.display(3*width / 4, height / 2, height - 100,size_w - 20, max_x_length, max_y_length);  
 
   //noLoop();
 }
